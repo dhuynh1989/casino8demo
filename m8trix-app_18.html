@@ -1,0 +1,2646 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08080A">
+<title>M8trix — Floor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,800&family=Inter+Tight:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  /* surface ladder — each step is a real elevation, not decoration */
+  --bg:#08080A;
+  --s1:#131316;
+  --s2:#1A1A1E;
+  --s3:#232328;
+  --lacquer:#280A0F;   /* deep lacquer panel behind the jackpot board */
+
+  --red:#EA1D24;       /* accent — reserved for live, action, and money */
+  --red-2:#8E1116;     /* dim red for hairlines and outlined controls */
+  --red-soft:rgba(234,29,36,.12);
+  --white:#F6F4F2;
+  --dim:#B6B2B4;
+  --muted:#8A8589;
+  --live:#EA1D24;
+
+  --line:rgba(246,244,242,.09);
+  --line-2:rgba(246,244,242,.16);
+
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Inter Tight",system-ui,-apple-system,sans-serif;
+  --data:"IBM Plex Mono",ui-monospace,monospace;
+
+  /* 4pt spacing scale */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px;
+  --s-6:24px; --s-8:32px; --s-10:40px;
+
+  --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:24px;
+
+  --e-1:0 1px 2px rgba(0,0,0,.3);
+  --e-2:0 4px 16px rgba(0,0,0,.35);
+  --e-3:0 16px 44px rgba(0,0,0,.55);
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+
+  --tabbar-h:calc(64px + env(safe-area-inset-bottom));
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--white);
+  font-family:var(--body);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  display:flex;justify-content:center;min-height:100dvh;
+  overscroll-behavior-y:none;
+}
+::selection{background:var(--red);color:#0A0A0B}
+
+.shell{
+  width:100%;max-width:440px;min-height:100dvh;position:relative;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.05'/></svg>"),
+    radial-gradient(130% 50% at 50% -8%, #2E1418 0%, rgba(42,33,64,0) 62%),
+    var(--bg);
+  padding-bottom:calc(var(--tabbar-h) + var(--s-4));
+}
+@media (min-width:520px){
+  body{background:#040405}
+  .shell{
+    border-left:1px solid var(--line);border-right:1px solid var(--line);
+    box-shadow:0 0 90px rgba(0,0,0,.7);
+  }
+}
+
+/* ============================================================
+   TYPE
+   ============================================================ */
+h1,h2,h3,p{margin:0}
+.display{font-family:var(--display);letter-spacing:-.025em;line-height:1.08;font-weight:800}
+.t-xl{font-size:27px}
+.t-lg{font-size:20px}
+.t-md{font-size:16px}
+.mono{font-family:var(--data);font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:var(--data);font-size:10.5px;font-weight:500;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--red-2);
+}
+.meta{font-family:var(--data);font-size:11.5px;color:var(--muted);letter-spacing:.02em;line-height:1.6}
+.prose{font-size:14px;line-height:1.6;color:var(--dim)}
+a{color:var(--red);text-decoration:none}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);
+  padding:calc(var(--s-4) + env(safe-area-inset-top)) var(--s-5) var(--s-3);
+  background:rgba(8,8,10,.72);backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  border-bottom:1px solid transparent;
+  transition:border-color .25s var(--ease),background .25s var(--ease);
+}
+.topbar.is-stuck{border-bottom-color:var(--line);background:rgba(8,8,10,.92)}
+.lockup{display:flex;align-items:center;gap:9px}
+.logo-img{height:26px;width:auto;max-width:190px;object-fit:contain;display:block}
+.logo-img[hidden]{display:none}
+.mark{width:26px;height:26px;flex:0 0 auto;display:block}
+.wordmark{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:.01em;line-height:1}
+.pill{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 11px;border-radius:999px;
+  background:rgba(234,29,36,.09);border:1px solid rgba(234,29,36,.22);
+  font-family:var(--data);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#F3D9DC;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--live)}
+.dot::after{
+  content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:var(--live);
+  animation:halo 2.4s var(--ease-out) infinite;
+}
+@keyframes halo{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(3.4)}}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.page{display:none;padding:var(--s-2) var(--s-5) var(--s-8)}
+.page.is-on{display:block}
+.page.is-on > *{animation:enter .42s var(--ease-out) both}
+.page.is-on > *:nth-child(2){animation-delay:.04s}
+.page.is-on > *:nth-child(3){animation-delay:.08s}
+.page.is-on > *:nth-child(4){animation-delay:.12s}
+.page.is-on > *:nth-child(5){animation-delay:.16s}
+@keyframes enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.block{margin-top:var(--s-8)}
+.block:first-child{margin-top:var(--s-4)}
+.block-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-3);margin-bottom:var(--s-3)}
+
+.card{
+  position:relative;background:var(--s1);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:var(--s-4);margin-top:var(--s-2);
+  box-shadow:var(--e-1);
+}
+.card::before{
+  content:'';position:absolute;inset:0 0 auto;height:1px;border-radius:var(--r-lg) var(--r-lg) 0 0;
+  background:linear-gradient(90deg,transparent,rgba(246,244,242,.11),transparent);
+}
+.card-row{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s-3)}
+.tag{
+  font-family:var(--data);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--red-2);border:1px solid var(--line-2);border-radius:999px;padding:4px 9px;white-space:nowrap;
+}
+.link{
+  display:inline-flex;align-items:center;gap:6px;margin-top:var(--s-3);
+  font-family:var(--data);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--red);
+}
+.link::after{content:'→';transition:transform .2s var(--ease)}
+.link:hover::after{transform:translateX(3px)}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+.btn{
+  font-family:var(--data);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  background:transparent;color:var(--red);border:1px solid var(--red-2);
+  border-radius:999px;padding:9px 15px;cursor:pointer;white-space:nowrap;
+  transition:background .18s var(--ease),transform .12s var(--ease),color .18s var(--ease);
+}
+.btn:hover{background:var(--red-soft)}
+.btn:active{transform:scale(.96)}
+.btn.solid{background:var(--red);color:#0A0A0B;border-color:var(--red);font-weight:500}
+.btn.on{background:var(--red);color:#0A0A0B;border-color:var(--red)}
+.btn.ghost{border-color:var(--line-2);color:var(--dim)}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px;border-radius:6px}
+
+.chip{
+  font-family:var(--data);font-size:11.5px;padding:9px 13px;border-radius:999px;cursor:pointer;
+  background:transparent;border:1px solid var(--line-2);color:var(--dim);
+  transition:background .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease);
+}
+.chip[aria-pressed="true"]{background:var(--white);color:#0A0A0B;border-color:var(--white);font-weight:500}
+.chips{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-3)}
+
+.field{
+  width:100%;font-family:var(--data);font-size:15px;color:var(--white);
+  background:rgba(4,4,5,.55);border:1px solid var(--line-2);border-radius:var(--r-sm);
+  padding:12px 14px;transition:border-color .2s var(--ease);
+}
+.field::placeholder{color:#66646A}
+.field:focus{border-color:var(--red-2);outline:2px solid var(--red);outline-offset:1px}
+.err{font-family:var(--data);font-size:11px;color:#F0A2A2;margin-top:var(--s-2);min-height:16px}
+
+/* ============================================================
+   JACKPOT BOARD — the signature: the lit sign over the poker room
+   ============================================================ */
+.board{
+  position:relative;overflow:hidden;margin-top:var(--s-3);
+  border-radius:var(--r-xl);padding:var(--s-5);
+  background:
+    radial-gradient(120% 78% at 50% -12%, rgba(234,29,36,.20), rgba(234,29,36,0) 62%),
+    linear-gradient(160deg,var(--lacquer) 0%,#140508 55%,#0A0305 100%);
+  border:1px solid rgba(234,29,36,.30);
+  box-shadow:var(--e-2),inset 0 1px 0 rgba(246,244,242,.10),inset 0 -34px 64px rgba(0,0,0,.5);
+}
+/* the pane of glass the sign sits behind */
+.board::before{
+  content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(197deg,rgba(246,244,242,.075) 0%,rgba(246,244,242,0) 36%);
+}
+/* one sweep when a fresh total lands — not a loop */
+.board::after{
+  content:'';position:absolute;top:0;left:-70%;width:55%;height:100%;pointer-events:none;opacity:0;
+  background:linear-gradient(100deg,transparent,rgba(246,244,242,.10),transparent);
+}
+.board.is-fresh::after{animation:sheen 1.5s var(--ease) 1}
+@keyframes sheen{0%{left:-70%;opacity:1}100%{left:130%;opacity:1}}
+.board-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s-4);position:relative}
+
+.jp{position:relative;min-width:0}
+.jp-hero{padding-bottom:var(--s-4);border-bottom:1px solid rgba(246,244,242,.10)}
+.jp-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3);margin-top:var(--s-4)}
+.jp-label{
+  font-family:var(--data);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(246,244,242,.6);
+}
+.jp-mini .jp-label{font-size:9.5px;letter-spacing:.08em}
+
+/* split-flap reels — a digit only moves when the feed moves it */
+.digits{
+  display:flex;align-items:stretch;margin-top:10px;
+  font-family:var(--data);font-weight:600;font-variant-numeric:tabular-nums;color:var(--white);
+  --dh:38px; --dw:22px; font-size:31px;
+}
+.jp-mini .digits{--dh:24px;--dw:13px;font-size:19px;margin-top:8px}
+.reel{
+  display:block;height:var(--dh);width:var(--dw);overflow:hidden;flex:0 0 auto;margin-right:2px;
+  background:linear-gradient(180deg,rgba(4,4,5,.78),rgba(4,4,5,.42));
+  border:1px solid rgba(234,29,36,.26);border-radius:5px;
+  box-shadow:inset 0 1px 0 rgba(246,244,242,.08),inset 0 -9px 14px rgba(0,0,0,.55);
+}
+.rs{display:block;transition:transform .95s var(--ease-out)}
+.digits.no-anim .rs{transition:none}
+.rs i{
+  display:block;height:var(--dh);line-height:var(--dh);text-align:center;font-style:normal;
+  text-shadow:0 0 12px rgba(234,29,36,.42);
+}
+.digits .sep{
+  display:flex;align-items:flex-end;justify-content:center;flex:0 0 auto;
+  width:11px;padding-bottom:6px;color:rgba(246,244,242,.42);
+}
+.jp-mini .digits .sep{width:7px;padding-bottom:4px}
+
+.board-foot{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--s-3);
+  margin-top:var(--s-4);padding-top:var(--s-3);border-top:1px solid rgba(246,244,242,.1);
+  font-family:var(--data);font-size:10px;letter-spacing:.06em;color:rgba(246,244,242,.45);
+}
+
+/* ============================================================
+   LIST ROWS
+   ============================================================ */
+.row{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-3) 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0;padding-top:var(--s-1)}
+.row:last-of-type{padding-bottom:var(--s-1)}
+.row-main{flex:1;min-width:0}
+.row-name{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:-.01em}
+.row-meta{font-family:var(--data);font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+.row-meta.live{color:var(--live)}
+
+/* ============================================================
+   HORIZONTAL STRIP
+   ============================================================ */
+.strip{
+  display:flex;gap:var(--s-3);overflow-x:auto;scroll-snap-type:x mandatory;
+  margin:0 calc(var(--s-5) * -1);padding:var(--s-1) var(--s-5) var(--s-3);
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.strip::-webkit-scrollbar{display:none}
+.tile{
+  flex:0 0 216px;scroll-snap-align:start;
+  background:var(--s1);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s-4);
+  transition:transform .14s var(--ease),border-color .2s var(--ease);
+}
+.tile:active{transform:scale(.985)}
+.tile-day{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--red)}
+.tile-name{font-family:var(--display);font-weight:600;font-size:16px;margin-top:8px;line-height:1.2}
+.tile-body{font-size:13px;color:var(--dim);margin-top:7px;line-height:1.5}
+
+/* ============================================================
+   SKELETONS
+   ============================================================ */
+.sk{background:rgba(246,244,242,.07);border-radius:6px;position:relative;overflow:hidden}
+.sk::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(246,244,242,.08),transparent);
+  animation:shimmer 1.3s linear infinite;
+}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.sk-line{height:11px;margin-bottom:9px}
+.sk-digits{height:38px;margin-top:10px}
+.sk-digits.mini{height:24px;margin-top:8px}
+
+/* ============================================================
+   MENU + CART
+   ============================================================ */
+.tbanner{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);
+  margin-top:var(--s-3);padding:var(--s-4);border-radius:var(--r-lg);
+  background:linear-gradient(180deg,rgba(234,29,36,.15),rgba(234,29,36,.03));
+  border:1px solid rgba(234,29,36,.3);
+}
+.mcat{margin:var(--s-6) 0 var(--s-2)}
+.mitem{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-3) 0;border-top:1px solid var(--line)}
+.mitem:first-of-type{border-top:0;padding-top:var(--s-1)}
+.mitem-main{flex:1;min-width:0}
+.mitem-name{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:-.01em}
+.mitem-desc{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.mitem-price{font-family:var(--data);font-size:12.5px;color:var(--red);margin-top:5px}
+.step{display:flex;align-items:center;gap:8px}
+.step button{
+  width:32px;height:32px;border-radius:50%;cursor:pointer;flex:0 0 auto;
+  background:transparent;border:1px solid var(--red-2);color:var(--red);
+  font-family:var(--data);font-size:16px;line-height:1;
+  transition:background .16s var(--ease),transform .12s var(--ease);
+}
+.step button:hover{background:var(--red-soft)}
+.step button:active{transform:scale(.9)}
+.step .qty{font-family:var(--data);font-size:14px;min-width:13px;text-align:center}
+.step.zero .minus,.step.zero .qty{display:none}
+
+.cartbar{
+  position:fixed;bottom:calc(var(--tabbar-h) + 10px);z-index:29;
+  width:100%;max-width:440px;padding:0 var(--s-4);
+  opacity:0;transform:translateY(14px);pointer-events:none;
+  transition:opacity .28s var(--ease-out),transform .28s var(--ease-out);
+}
+.cartbar.is-on{opacity:1;transform:none;pointer-events:auto}
+.cartbar button{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);
+  background:var(--red);color:#0A0A0B;border:0;border-radius:var(--r-md);
+  padding:15px 18px;cursor:pointer;box-shadow:var(--e-3);
+  font-family:var(--data);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;
+  transition:transform .12s var(--ease);
+}
+.cartbar button:active{transform:scale(.985)}
+.bump{animation:bump .35s var(--ease-out)}
+@keyframes bump{40%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+/* ============================================================
+   SHEET
+   ============================================================ */
+.scrim{
+  position:fixed;inset:0;z-index:40;display:flex;justify-content:center;align-items:flex-end;
+  background:rgba(4,4,5,.7);backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .3s var(--ease);
+}
+.scrim.is-on{opacity:1;pointer-events:auto}
+.sheet{
+  width:100%;max-width:440px;background:var(--s2);
+  border-top:1px solid rgba(234,29,36,.28);border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:var(--s-3) var(--s-5) calc(var(--s-6) + env(safe-area-inset-bottom));
+  max-height:88dvh;overflow-y:auto;box-shadow:var(--e-3);
+  transform:translateY(100%);transition:transform .34s var(--ease-out);
+}
+.scrim.is-on .sheet{transform:none}
+.grabber{width:38px;height:4px;border-radius:99px;background:var(--line-2);margin:0 auto var(--s-4)}
+.sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-3);margin-bottom:var(--s-4)}
+.close{
+  background:none;border:0;color:var(--muted);cursor:pointer;padding:4px;
+  font-family:var(--data);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+}
+.close:hover{color:var(--white)}
+.line{
+  display:flex;justify-content:space-between;gap:var(--s-3);
+  padding:11px 0;border-top:1px solid var(--line);font-size:14px;
+}
+.line:first-of-type{border-top:0}
+.line .q{font-family:var(--data);color:var(--muted);margin-right:9px}
+.total{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:14px 0 2px;margin-top:var(--s-2);border-top:1px solid rgba(234,29,36,.3);
+}
+.total .amt{font-family:var(--data);font-size:19px;color:var(--red);font-weight:600}
+.note{
+  width:100%;font-family:var(--body);font-size:14px;color:var(--white);margin-top:var(--s-4);
+  background:rgba(4,4,5,.55);border:1px solid var(--line-2);border-radius:var(--r-sm);
+  padding:12px 14px;resize:none;
+}
+.note:focus{border-color:var(--red-2);outline:2px solid var(--red);outline-offset:1px}
+.send{
+  width:100%;margin-top:var(--s-4);background:var(--red);color:#0A0A0B;border:0;
+  border-radius:var(--r-md);padding:16px;cursor:pointer;font-weight:500;
+  font-family:var(--data);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+  transition:transform .12s var(--ease),opacity .2s var(--ease);
+}
+.send:active{transform:scale(.985)}
+.send[disabled]{opacity:.45;cursor:not-allowed}
+
+.switch{display:flex;align-items:center;gap:12px;margin-top:var(--s-5);cursor:pointer}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch-box{
+  width:44px;height:26px;border-radius:999px;flex:0 0 auto;position:relative;
+  background:rgba(246,244,242,.12);border:1px solid var(--line-2);transition:background .22s var(--ease);
+}
+.switch-box::after{
+  content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+  background:var(--muted);transition:transform .22s var(--ease-out),background .22s var(--ease);
+}
+.switch input:checked + .switch-box{background:rgba(234,29,36,.32);border-color:rgba(234,29,36,.4)}
+.switch input:checked + .switch-box::after{transform:translateX(18px);background:var(--red)}
+.switch input:focus-visible + .switch-box{outline:2px solid var(--red);outline-offset:3px}
+.fine{font-family:var(--data);font-size:10px;line-height:1.75;color:var(--muted);margin-top:var(--s-2)}
+
+.confirm{text-align:center;padding:var(--s-2) 0}
+.confirm-ring{
+  width:56px;height:56px;margin:0 auto var(--s-4);border-radius:50%;
+  border:1px solid rgba(234,29,36,.4);display:grid;place-items:center;
+  background:var(--red-soft);animation:pop .45s var(--ease-out) both;
+}
+@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+
+/* ============================================================
+   TRACKING
+   ============================================================ */
+.track{
+  margin-top:var(--s-3);padding:var(--s-4);border-radius:var(--r-lg);
+  background:linear-gradient(160deg,var(--lacquer) 0%,#140508 60%,#0C0406 100%);
+  border:1px solid rgba(234,29,36,.3);box-shadow:inset 0 1px 0 rgba(246,244,242,.07);
+}
+.track-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-3);margin-bottom:var(--s-5)}
+.stages{display:flex}
+.stage{flex:1;text-align:center;position:relative}
+.stage::before{
+  content:'';position:absolute;top:7px;left:-50%;width:100%;height:2px;
+  background:rgba(246,244,242,.14);transition:background .5s var(--ease);
+}
+.stage:first-child::before{display:none}
+.stage.done::before{background:var(--red)}
+.stage-dot{
+  width:16px;height:16px;border-radius:50%;margin:0 auto;position:relative;z-index:1;
+  background:#150609;border:2px solid rgba(246,244,242,.22);transition:all .4s var(--ease-out);
+}
+.stage.done .stage-dot{background:var(--red);border-color:var(--red)}
+.stage.now .stage-dot{
+  background:#150609;border-color:var(--red);
+  animation:ping 2s var(--ease-out) infinite;
+}
+@keyframes ping{0%,100%{box-shadow:0 0 0 4px rgba(234,29,36,.16)}50%{box-shadow:0 0 0 9px rgba(234,29,36,.04)}}
+.stage-label{
+  font-family:var(--data);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+  color:rgba(246,244,242,.45);margin-top:10px;line-height:1.35;
+}
+.stage.done .stage-label,.stage.now .stage-label{color:var(--white)}
+.track-say{font-size:13.5px;color:#E8D6D8;margin-top:var(--s-4);line-height:1.5}
+.track-sms{font-family:var(--data);font-size:10.5px;color:rgba(246,244,242,.45);margin-top:9px}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast{
+  position:fixed;top:calc(var(--s-3) + env(safe-area-inset-top));z-index:60;
+  width:100%;max-width:440px;padding:0 var(--s-4);
+  opacity:0;transform:translateY(-16px) scale(.98);pointer-events:none;
+  transition:opacity .3s var(--ease-out),transform .34s var(--ease-out);
+}
+.toast.is-on{opacity:1;transform:none;pointer-events:auto}
+.toast-in{
+  display:flex;gap:12px;cursor:pointer;
+  background:rgba(26,26,30,.96);border:1px solid var(--line-2);border-radius:var(--r-lg);
+  padding:13px 15px;box-shadow:var(--e-3);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.toast-icon{
+  width:32px;height:32px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--red);color:#0A0A0B;font-family:var(--display);font-weight:800;font-size:14px;
+}
+.toast-head{
+  display:flex;align-items:baseline;gap:8px;
+  font-family:var(--data);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+}
+.toast-head b{color:var(--white);font-weight:500}
+.toast-body{font-size:13.5px;line-height:1.45;margin-top:5px;color:var(--dim)}
+
+/* ============================================================
+   ASK — concierge
+   ============================================================ */
+.icon-btn{
+  width:36px;height:36px;flex:0 0 auto;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;
+  background:var(--red-soft);border:1px solid rgba(234,29,36,.3);color:var(--red);
+  transition:background .18s var(--ease),transform .12s var(--ease);
+}
+.icon-btn:hover{background:rgba(234,29,36,.2)}
+.icon-btn:active{transform:scale(.93)}
+.icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+.pick{
+  width:100%;display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-3);
+  background:transparent;border:0;border-top:1px solid var(--line);cursor:pointer;
+  padding:15px 2px;color:var(--white);font-family:var(--display);font-weight:600;font-size:17px;
+  text-align:left;
+}
+#langList .pick:first-child{border-top:0}
+.pick .sub{font-family:var(--data);font-size:11px;color:var(--muted);font-weight:400;letter-spacing:.04em}
+.pick[aria-current="true"]{color:var(--red)}
+.pick[aria-current="true"] .sub{color:var(--red-2)}
+.pick:hover{background:var(--red-soft)}
+
+.lang-row{display:flex;gap:6px;margin-bottom:var(--s-3);flex-wrap:wrap;align-items:center}
+.spk{
+  margin-left:auto;width:34px;height:34px;flex:0 0 auto;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;background:transparent;border:1px solid var(--line-2);color:var(--muted);
+  transition:background .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease);
+}
+.spk svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.spk[aria-pressed="true"]{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.mic{
+  width:44px;height:44px;flex:0 0 auto;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;background:transparent;border:1px solid var(--line-2);color:var(--dim);
+  transition:background .18s var(--ease),color .18s var(--ease),transform .12s var(--ease);
+}
+.mic svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.mic:active{transform:scale(.92)}
+.mic.on{background:var(--red);color:#fff;border-color:var(--red);animation:mic 1.5s var(--ease-out) infinite}
+@keyframes mic{0%,100%{box-shadow:0 0 0 0 rgba(234,29,36,.4)}55%{box-shadow:0 0 0 11px rgba(234,29,36,0)}}
+.speaking{position:relative}
+.speaking::after{
+  content:'';position:absolute;left:-9px;top:50%;transform:translateY(-50%);
+  width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1.1s infinite;
+}
+.lang{
+  font-family:var(--data);font-size:11px;letter-spacing:.04em;padding:6px 11px;border-radius:999px;
+  background:transparent;border:1px solid var(--line-2);color:var(--muted);cursor:pointer;
+  transition:background .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease);
+}
+.lang[aria-pressed="true"]{background:var(--white);color:#0A0A0B;border-color:var(--white);font-weight:500}
+
+.sheet.tall{
+  height:90dvh;display:flex;flex-direction:column;overflow:hidden;
+  padding-bottom:calc(var(--s-3) + env(safe-area-inset-bottom));
+}
+.ask-log{flex:1;overflow-y:auto;padding:var(--s-1) 0 var(--s-4);-webkit-overflow-scrolling:touch}
+.msg{display:flex;margin-top:var(--s-3)}
+.msg.me{justify-content:flex-end}
+.bubble{
+  max-width:84%;padding:11px 14px;border-radius:var(--r-md);
+  font-size:14.5px;line-height:1.55;white-space:pre-wrap;word-wrap:break-word;
+  animation:enter .3s var(--ease-out) both;
+}
+.bubble.them{background:var(--s3);border:1px solid var(--line);border-bottom-left-radius:5px;color:var(--white)}
+.bubble.me{background:var(--red);color:#0A0A0B;border-bottom-right-radius:5px;font-weight:500}
+.bubble.warn{background:rgba(234,29,36,.12);border:1px solid rgba(234,29,36,.35);color:#F3C9CB}
+.typing{display:flex;gap:5px;padding:14px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.3s infinite}
+.typing i:nth-child(2){animation-delay:.18s}
+.typing i:nth-child(3){animation-delay:.36s}
+@keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.starters{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-4)}
+.ask-bar{
+  display:flex;gap:var(--s-2);align-items:flex-end;
+  padding-top:var(--s-3);border-top:1px solid var(--line);
+}
+.ask-in{
+  flex:1;font-family:var(--body);font-size:15px;color:var(--white);line-height:1.4;
+  background:rgba(4,4,5,.55);border:1px solid var(--line-2);border-radius:var(--r-md);
+  padding:12px 14px;resize:none;max-height:110px;
+}
+.ask-in::placeholder{color:#66646A}
+.ask-in:focus{border-color:var(--red-2);outline:2px solid var(--red);outline-offset:1px}
+.ask-send{
+  width:44px;height:44px;flex:0 0 auto;border-radius:50%;border:0;cursor:pointer;
+  background:var(--red);color:#0A0A0B;display:grid;place-items:center;
+  transition:opacity .2s var(--ease),transform .12s var(--ease);
+}
+.ask-send:active{transform:scale(.92)}
+.ask-send[disabled]{opacity:.35;cursor:not-allowed}
+.ask-send svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ask-foot{font-family:var(--data);font-size:9.5px;color:var(--muted);text-align:center;margin-top:9px;letter-spacing:.02em}
+
+/* ============================================================
+   LEGAL
+   ============================================================ */
+.legal{
+  margin-top:var(--s-8);padding-top:var(--s-5);border-top:1px solid var(--line);
+  font-family:var(--data);font-size:10px;line-height:1.9;color:var(--muted);letter-spacing:.02em;
+}
+.legal b{color:var(--dim);font-weight:500}
+
+/* ============================================================
+   TAB BAR
+   ============================================================ */
+.tabbar{
+  position:fixed;bottom:0;z-index:35;width:100%;max-width:440px;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  background:rgba(11,11,13,.9);backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
+  border-top:1px solid var(--line);
+  padding:9px 4px calc(9px + env(safe-area-inset-bottom));
+}
+.tab{
+  position:relative;background:none;border:0;cursor:pointer;padding:7px 2px 5px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted);
+  font-family:var(--data);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+  transition:color .2s var(--ease);
+}
+.tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.tab.is-on{color:var(--red)}
+.tab.is-on svg{filter:drop-shadow(0 0 8px rgba(234,29,36,.45))}
+.tab.is-on::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:16px;height:2px;border-radius:99px;background:var(--red);
+  animation:slide .3s var(--ease-out) both;
+}
+@keyframes slide{from{width:0;opacity:0}to{width:16px;opacity:1}}
+.tab .badge{
+  position:absolute;top:3px;right:calc(50% - 17px);
+  min-width:16px;height:16px;padding:0 4px;border-radius:99px;
+  background:var(--red);color:#fff;font-size:9.5px;line-height:16px;
+  display:none;
+}
+.tab .badge.is-on{display:block;animation:pop .3s var(--ease-out) both}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+<div class="shell">
+  <header class="topbar" id="topbar">
+    <div class="lockup">
+      <img class="logo-img" id="logoImg" alt="Casino M8trix" hidden>
+      <span class="lockup" id="logoFallback">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M16 2.4 27.6 9v14L16 29.6 4.4 23V9z" fill="none" stroke="#E03A48" stroke-width="1.6"/>
+          <text x="16" y="21.4" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif"
+                font-size="14" font-weight="800" fill="#E03A48">8</text>
+        </svg>
+        <span class="wordmark">M8TRIX</span>
+      </span>
+    </div>
+    <div style="display:flex;align-items:center;gap:var(--s-2)">
+      <span class="pill"><span class="dot"></span>Open · 24/7</span>
+      <button class="icon-btn" id="langBtn" aria-label="Language">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.4"/><path d="M3.7 12h16.6"/>
+          <path d="M12 3.6c2.2 2.3 3.4 5.3 3.4 8.4s-1.2 6.1-3.4 8.4c-2.2-2.3-3.4-5.3-3.4-8.4S9.8 5.9 12 3.6z"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="askBtn" aria-label="Ask a question">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-3.3-6.5"/><path d="M9.4 9.2a2.7 2.7 0 1 1 3.3 3.4c-.5.2-.8.7-.8 1.3v.4"/>
+          <path d="M12 17.6h.01"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════ FLOOR ═══════════ -->
+  <section class="page is-on" id="floor" role="tabpanel" aria-labelledby="tab-floor">
+    <div>
+      <div class="board">
+        <div class="board-head">
+          <h2 class="display t-md">Progressive jackpots</h2>
+          <span class="eyebrow">Linked tables</span>
+        </div>
+        <div id="jpList"></div>
+        <div class="board-foot">
+          <span id="jpStamp">—</span>
+          <a target="_blank" rel="noopener" href="https://www.casinom8trix.com/jackpots/">Rules &amp; qualifying hands</a>
+        </div>
+      </div>
+      <p class="meta" style="margin-top:10px">Totals are published once a day from the previous day’s jackpot fees, so the real amount runs ahead of the figure shown.</p>
+    </div>
+
+    <div class="block">
+      <div class="block-head">
+        <h2 class="display t-lg">Seat me</h2>
+        <span class="eyebrow" id="waitStamp">Live</span>
+      </div>
+      <div class="card" id="waitlist"></div>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2 class="display t-lg">This week</h2></div>
+      <div class="strip">
+        <article class="tile">
+          <p class="tile-day">Daily · 3–6pm &amp; 9–11pm</p>
+          <h3 class="tile-name">Happy hour</h3>
+          <p class="tile-body">Half-price select appetizers. $5 draft beer, house wine and well cocktails.</p>
+        </article>
+        <article class="tile">
+          <p class="tile-day">Tuesdays · 5–11pm</p>
+          <h3 class="tile-name">Taco Tuesday</h3>
+          <p class="tile-body">Half off south-of-the-border plates. $5 Patrón margaritas and draft.</p>
+        </article>
+        <article class="tile">
+          <p class="tile-day">Wednesdays · 5–11pm</p>
+          <h3 class="tile-name">Wipeout Wednesday</h3>
+          <p class="tile-body">$6 tiki drinks, and loco moco, shrimp tacos or Hawaiian pizza at $10.</p>
+        </article>
+        <article class="tile">
+          <p class="tile-day">Thu &amp; Sun nights</p>
+          <h3 class="tile-name">Prime rib</h3>
+          <p class="tile-body">The weekly roast, on the gaming floor menu.</p>
+        </article>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2 class="display t-lg">Ask anything</h2></div>
+      <div class="card">
+        <h3 class="row-name">Floor concierge</h3>
+        <p class="prose" style="margin-top:7px">Rules for a game you've never played, what's open at 3am, how the bad beat qualifies, where to park. Ask in plain words.</p>
+        <p class="meta" style="margin-top:9px">English · Tiếng Việt · 中文 · Español</p>
+        <div class="chips">
+          <button class="chip" data-ask="How do I play pai gow tiles?">How pai gow works</button>
+          <button class="chip" data-ask="What food is good for a long poker session?">What to eat</button>
+          <button class="chip" data-ask="How does the bad beat jackpot qualify?">Bad beat rules</button>
+        </div>
+      </div>
+    </div>
+
+
+    <p class="legal">
+      <b>21+ only. Please play responsibly.</b><br>
+      Free and confidential: 1-800-GAMBLER · <a href="https://problemgambling.ca.gov">problemgambling.ca.gov</a><br>
+      <a target="_blank" rel="noopener" href="https://casinom8trix.com/">casinom8trix.com</a> · unofficial prototype, not affiliated with Casino M8trix.
+    </p>
+  </section>
+
+  <!-- ═══════════ GAMES ═══════════ -->
+  <section class="page" id="games" role="tabpanel" aria-labelledby="tab-games">
+    <div>
+      <p class="eyebrow">Table gaming</p>
+      <h2 class="display t-xl" style="margin-top:8px">What's dealt here</h2>
+    </div>
+
+    <div class="block" style="margin-top:var(--s-5)">
+      <article class="card">
+        <div class="card-row">
+          <h3 class="row-name">Poker</h3><span class="tag">Live tables</span>
+        </div>
+        <p class="meta" style="margin-top:5px">Hold'em · Omaha · tournaments</p>
+        <p class="prose" style="margin-top:9px">Player against player, with the house taking a seat fee rather than a stake in the hand. Bad beat and progressive promotions run on participating tables.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/games/poker/">Poker room</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row">
+          <h3 class="row-name">Pure 21.5 Blackjack</h3><span class="tag">California rules</span>
+        </div>
+        <p class="prose" style="margin-top:9px">The card-room version of blackjack. State rules mean a rotating player-dealer rather than a house bank, and the 21.5 variant changes how hands qualify.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/games/pure-21-5-blackjack/">How it plays</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row">
+          <h3 class="row-name">Eternal Baccarat</h3><span class="tag">Player-banked</span>
+        </div>
+        <p class="prose" style="margin-top:9px">Baccarat adapted for California card rooms, with side wagers at participating tables.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/games/baccarat/">How it plays</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row">
+          <h3 class="row-name">Double Hand Poker</h3><span class="tag">Pai gow poker</span>
+        </div>
+        <p class="prose" style="margin-top:9px">Seven cards split into a five-card high hand and a two-card low hand. Slow-paced, and a forgiving first table if you're learning.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/games/double-hand-poker-aka-pai-gow-poker/">How it plays</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row">
+          <h3 class="row-name">Pai Gow Tiles</h3><span class="tag">Cherry &amp; Pearl</span>
+        </div>
+        <p class="prose" style="margin-top:9px">The tile game, dealt with a bonus wager. Ranking the tiles takes practice — the Card Academy walkthrough covers it.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/games/pai-gow-tiles/">How it plays</a>
+      </article>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2 class="display t-lg">New to a table?</h2></div>
+      <article class="card">
+        <h3 class="row-name">Card Academy</h3>
+        <p class="prose" style="margin-top:9px">A tutorial series built with gaming-industry pros, covering fundamentals and strategy for every game on this floor. Online or in person.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://www.casinom8trix.com/academy/">Join the academy</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ═══════════ ORDER ═══════════ -->
+  <section class="page" id="order" role="tabpanel" aria-labelledby="tab-order">
+    <div id="tableKnown" hidden>
+      <div class="tbanner">
+        <div>
+          <p class="display t-lg" id="tnum">Table —</p>
+          <p class="eyebrow" id="tzone" style="margin-top:5px"></p>
+        </div>
+        <button class="btn ghost" id="changeTable">Change</button>
+      </div>
+      <p class="meta" style="margin-top:10px">A runner brings it to your seat. Keep playing.</p>
+      <div id="trackWrap"></div>
+      <div id="menu"></div>
+      <p class="meta" style="margin-top:var(--s-5)">This is a short list. <a target="_blank" rel="noopener" href="https://www.casinom8trix.com/wp-content/uploads/2024/10/Zone-8-Menu.pdf">The full Zone 8 menu</a> has everything else, and the runner can take an order from it.</p>
+      <p class="legal">
+        <b>Prices as published; specials are dine-in and subject to availability.</b><br>
+        A live build prints to the kitchen and settles through the floor POS.<br>
+        21+ · please play responsibly · 1-800-GAMBLER
+      </p>
+    </div>
+
+    <div id="tableUnknown">
+      <div>
+        <p class="eyebrow">Order to your seat</p>
+        <h2 class="display t-xl" style="margin-top:8px">Scan the code<br>on your table</h2>
+      </div>
+      <div class="card" style="margin-top:var(--s-5)">
+        <p class="prose">Every table carries a numbered QR tent, 1 through 60. Scanning it opens this menu with your table already attached, so the runner knows exactly where to go.</p>
+        <p class="prose" style="margin-top:10px">No code in reach? Enter the number printed on the tent.</p>
+        <div style="display:flex;gap:var(--s-2);margin-top:var(--s-4)">
+          <input class="field" id="tableIn" type="number" min="1" max="60" placeholder="12"
+                 inputmode="numeric" style="width:96px;text-align:center" aria-label="Table number">
+          <button class="btn solid" id="setTable" style="flex:1">Start order</button>
+        </div>
+        <p class="err" id="tableErr" role="alert"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ DINING ═══════════ -->
+  <section class="page" id="dining" role="tabpanel" aria-labelledby="tab-dining">
+    <div>
+      <p class="eyebrow">Five kitchens, one building</p>
+      <h2 class="display t-xl" style="margin-top:8px">Eat here</h2>
+      <p class="prose" style="margin-top:10px">Happy hour runs twice a day, 3–6pm and 9–11pm: half-price select appetizers, and $5 draft beer, house wine and well cocktails. Prime rib on Thursday and Sunday nights.</p>
+    </div>
+
+    <div class="block" style="margin-top:var(--s-5)">
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Gaming floor service</h3><span class="tag">24 / 7</span></div>
+        <p class="meta" style="margin-top:5px">Food to your table, around the clock</p>
+        <p class="prose" style="margin-top:9px">Anything from the kitchens brought to your seat, including sushi. Scan the code on your table to order without giving up your chair.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://www.casinom8trix.com/restaurant/gaming-floor/">Floor service page</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Lotus Café</h3><span class="tag">24 / 7</span></div>
+        <p class="meta" style="margin-top:5px">To-go 408-484-6298</p>
+        <p class="prose" style="margin-top:9px">Vietnamese-influenced bánh mì, deli and breakfast sandwiches, fresh-baked pastries. Lee's Vietnamese iced coffee, a full espresso bar and a long tea list. The only kitchen open at 4am.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/restaurant/lotus-cafe/">Lotus Café menu</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Zone 8 Sports Bar &amp; Grill</h3><span class="tag">Games on</span></div>
+        <p class="meta" style="margin-top:5px">Dining room 11am–12am · to 1am Fri &amp; Sat · bar runs later<br>408-453-4030 · to-go 408-484-6298</p>
+        <p class="prose" style="margin-top:9px">American and Asian plates, a long bar, and forty HD screens plus two 200-inch ones. Salads run large enough to share. There's a patio.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://www.casinom8trix.com/wp-content/uploads/2024/10/Zone-8-Menu.pdf">Full Zone 8 menu</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Sushi Confidential</h3><span class="tag">Ten-seat bar</span></div>
+        <p class="prose" style="margin-top:9px">The Bay Area sushi bar's casino location. Sit at the ten-seat counter, or have it sent to the gaming floor, Epic Bar or Zone 8 — it travels across the whole building.</p>
+        <p class="meta" style="margin-top:9px">Hours vary — the podium will know.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://www.casinom8trix.com/restaurant/sushi-confidential/">Sushi Confidential</a>
+      </article>
+
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Epic Bar</h3><span class="tag">Centre floor</span></div>
+        <p class="prose" style="margin-top:9px">The bar in the middle of the casino, and the easiest place to meet someone. Sushi is served here too.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/restaurant/epic-bar/">Epic Bar</a>
+      </article>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2 class="display t-lg">Weekly specials</h2></div>
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Taco Tuesday</h3><span class="tag">5–11pm</span></div>
+        <p class="prose" style="margin-top:9px">Half off south-of-the-border plates. House margaritas $8, Patrón margaritas $5, Modelo and Corona draft $5.</p>
+      </article>
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Wipeout Wednesday</h3><span class="tag">5–11pm</span></div>
+        <p class="prose" style="margin-top:9px">Tiki drinks at $6 — mai tai, blue hawaii, tropi-cali breeze. Loco moco, shrimp soft tacos and Hawaiian pizza at $10 each.</p>
+      </article>
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Sunday wine</h3><span class="tag">3–9pm</span></div>
+        <p class="prose" style="margin-top:9px">Half-price bottles, $5 wines by the glass, and single malt pours at $6 and $15.</p>
+      </article>
+      <p class="meta" style="margin-top:var(--s-3)">Specials are dine-in, subject to availability, and some are excluded at Zone 8 and Lotus Café. Confirm at the table.</p>
+      <a class="link" target="_blank" rel="noopener" href="https://www.casinom8trix.com/dining/">All dining on casinom8trix.com</a>
+    </div>
+  </section>
+
+  <!-- ═══════════ VISIT ═══════════ -->
+  <section class="page" id="visit" role="tabpanel" aria-labelledby="tab-visit">
+    <div>
+      <p class="eyebrow">Getting there</p>
+      <h2 class="display t-xl" style="margin-top:8px">1887 Matrix Blvd<br>San Jose</h2>
+      <p class="meta" style="margin-top:10px">CA 95110 · off Highway 101, near San José International</p>
+      <div style="display:flex;gap:var(--s-2);margin-top:var(--s-4)">
+        <a class="btn solid" style="flex:1;text-align:center;padding:13px"
+           href="https://maps.google.com/?q=1887+Matrix+Blvd+San+Jose+CA+95110">Directions</a>
+        <a class="btn" style="flex:1;text-align:center;padding:13px" href="tel:4082443333">408-244-3333</a>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2 class="display t-lg">Also in the building</h2></div>
+      <article class="card">
+        <div class="card-row"><h3 class="row-name">Event Tower</h3><span class="tag">Floors 6–7</span></div>
+        <p class="prose" style="margin-top:9px">Meeting and event space with views across Silicon Valley — corporate days, team events, private parties.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://www.casinom8trix.com/event-tower/">Request a date</a>
+      </article>
+      <article class="card">
+        <h3 class="row-name">Club 8 Rewards</h3>
+        <p class="prose" style="margin-top:9px">Monthly news and promotions by email. Sign-up lives on the main site.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/">Sign up</a>
+      </article>
+      <article class="card">
+        <h3 class="row-name">The website</h3>
+        <p class="prose" style="margin-top:9px">Full menus, current promotions, jackpot rules and the 3D tour of the building.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/">casinom8trix.com</a>
+      </article>
+      <article class="card">
+        <h3 class="row-name">Jobs</h3>
+        <p class="prose" style="margin-top:9px">Dealers, kitchen, security and floor staff — openings posted year-round.</p>
+        <a class="link" target="_blank" rel="noopener" href="https://casinom8trix.com/employment/">See openings</a>
+      </article>
+    </div>
+
+    <p class="legal">
+      <b>21+ only. Please play responsibly.</b><br>
+      1-800-GAMBLER · <a href="https://problemgambling.ca.gov">problemgambling.ca.gov</a><br>
+      Prototype built from public information on casinom8trix.com. Not affiliated with or endorsed by
+      Casino M8trix. Jackpot totals, wait times and menu prices are demo data.
+    </p>
+  </section>
+
+  <!-- ═══════════ CART ═══════════ -->
+  <div class="cartbar" id="cartbar">
+    <button id="reviewBtn">
+      <span id="cartCount">0 items</span>
+      <span class="mono" id="cartTotal">$0.00</span>
+    </button>
+  </div>
+
+  <!-- ═══════════ SHEET ═══════════ -->
+  <div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-label="Review order">
+    <div class="sheet" id="sheet"></div>
+  </div>
+
+  <!-- ═══════════ LANGUAGE ═══════════ -->
+  <div class="scrim" id="langScrim" role="dialog" aria-modal="true" aria-label="Language">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <h3 class="display t-lg">Language</h3>
+        <button class="close" id="langClose">Close</button>
+      </div>
+      <div id="langList">
+        <button class="pick" data-lang="en"><span>English</span><span class="sub">English</span></button>
+        <button class="pick" data-lang="vi"><span>Tiếng Việt</span><span class="sub">Vietnamese</span></button>
+        <button class="pick" data-lang="zh"><span>中文</span><span class="sub">Chinese</span></button>
+        <button class="pick" data-lang="es"><span>Español</span><span class="sub">Spanish</span></button>
+      </div>
+      <p class="meta" style="margin-top:var(--s-4)">Game names, venue names and menu items stay as printed, so they match what staff say at the table.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ ASK ═══════════ -->
+  <div class="scrim" id="askScrim" role="dialog" aria-modal="true" aria-label="Floor concierge">
+    <div class="sheet tall">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <h3 class="display t-lg" id="askTitle">Floor concierge</h3>
+        <button class="close" id="askClose">Close</button>
+      </div>
+      <div class="lang-row" id="langRow" role="group" aria-label="Language">
+        <button class="lang" data-lang="en" aria-pressed="true">English</button>
+        <button class="lang" data-lang="vi" aria-pressed="false">Tiếng Việt</button>
+        <button class="lang" data-lang="zh" aria-pressed="false">中文</button>
+        <button class="lang" data-lang="es" aria-pressed="false">Español</button>
+        <button class="spk" id="spkBtn" aria-pressed="false" hidden aria-label="Read answers aloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="M16 9.2a4 4 0 0 1 0 5.6"/>
+            <path d="M18.6 6.6a7.6 7.6 0 0 1 0 10.8"/>
+          </svg>
+        </button>
+      </div>
+      <div class="ask-log" id="askLog"></div>
+      <div class="ask-bar">
+        <textarea class="ask-in" id="askIn" rows="1" maxlength="500" enterkeyhint="send"
+                  placeholder="Ask about games, food, the building…"
+                  aria-label="Your question"></textarea>
+        <button class="mic" id="micBtn" hidden aria-label="Ask by voice">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="3" width="6" height="11" rx="3"/>
+            <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/>
+          </svg>
+        </button>
+        <button class="ask-send" id="askSend" aria-label="Send">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12h14"/><path d="M13 6.5 18.5 12 13 17.5"/></svg>
+        </button>
+      </div>
+      <p class="ask-foot" id="askFoot">AI answers can be wrong — check anything that matters with staff. 21+ · 1-800-GAMBLER</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ TOAST ═══════════ -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="toast-in" id="toastIn">
+      <div class="toast-icon">8</div>
+      <div>
+        <div class="toast-head"><b>M8trix</b><span>Text · now</span></div>
+        <p class="toast-body" id="toastBody"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TABS ═══════════ -->
+  <nav class="tabbar" role="tablist" aria-label="Sections">
+    <button class="tab is-on" id="tab-floor" role="tab" aria-selected="true" data-page="floor">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M8 12h8M12 8v8"/></svg>Floor
+    </button>
+    <button class="tab" id="tab-games" role="tab" aria-selected="false" data-page="games">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11.5" height="15.5" rx="2.2"/><path d="M8.5 21H17a2 2 0 0 0 2-2V8"/></svg>Games
+    </button>
+    <button class="tab" id="tab-order" role="tab" aria-selected="false" data-page="order">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 7.5h15.6l-1.3 11a2 2 0 0 1-2 1.8H7.5a2 2 0 0 1-2-1.8z"/><path d="M9 7.5V6a3 3 0 0 1 6 0v1.5"/></svg>Order
+      <span class="badge" id="tabBadge">0</span>
+    </button>
+    <button class="tab" id="tab-dining" role="tab" aria-selected="false" data-page="dining">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3v7a2 2 0 0 0 4 0V3M8.5 12v9"/><path d="M17 3c-1.4 2-2 4.2-2 6.2h4c0-2-.6-4.2-2-6.2zM17 9.5V21"/></svg>Dining
+    </button>
+    <button class="tab" id="tab-visit" role="tab" aria-selected="false" data-page="visit">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6.8-5.6 6.8-11A6.8 6.8 0 1 0 5.2 10c0 5.4 6.8 11 6.8 11z"/><circle cx="12" cy="9.9" r="2.5"/></svg>Visit
+    </button>
+  </nav>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $  = function(id){ return document.getElementById(id); };
+var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var money = function(v){ return '$' + v.toFixed(2); };
+
+/* ═══════════ BRAND LOGO ═══════════
+   Drop the official logo in here. Any URL or relative path works
+   (SVG preferred, otherwise a transparent PNG at 2x height).
+   Leave it empty and the placeholder mark stays.
+   You can also test one without editing: add &logo=<url> to the address. */
+var LOGO_URL = 'data:image/png;base64,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';
+
+(function loadLogo(){
+  var url = new URLSearchParams(location.search).get('logo') || LOGO_URL;
+  if (!url) return;
+  var img = $('logoImg');
+  img.onload  = function(){ img.hidden = false; $('logoFallback').hidden = true; };
+  img.onerror = function(){ img.hidden = true;  $('logoFallback').hidden = false; };
+  img.src = url;
+})();
+
+/* ═══════════ TABS ═══════════ */
+var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+function goTo(page){
+  tabs.forEach(function(t){
+    var on = t.dataset.page === page;
+    t.classList.toggle('is-on', on);
+    t.setAttribute('aria-selected', on);
+  });
+  document.querySelectorAll('.page').forEach(function(p){
+    p.classList.toggle('is-on', p.id === page);
+  });
+  window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'});
+  syncCart();
+}
+tabs.forEach(function(t){
+  t.addEventListener('click', function(){ goTo(t.dataset.page); });
+  t.addEventListener('keydown', function(e){
+    var i = tabs.indexOf(t), n = null;
+    if (e.key === 'ArrowRight') n = tabs[(i+1) % tabs.length];
+    if (e.key === 'ArrowLeft')  n = tabs[(i-1+tabs.length) % tabs.length];
+    if (n){ e.preventDefault(); n.focus(); goTo(n.dataset.page); }
+  });
+});
+
+/* header lifts on scroll */
+var topbar = $('topbar');
+addEventListener('scroll', function(){
+  topbar.classList.toggle('is-stuck', scrollY > 8);
+}, {passive:true});
+
+/* ═══════════ JACKPOT BOARD ═══════════ */
+var POTS = [
+  {key:'p100',    label:'Progressive · 100%', val:172825.16},
+  {key:'p10',     label:'Progressive · 10%',  val:17282.52},
+  {key:'badbeat', label:"Hold'em bad beat",   val:25500.00}
+];
+var jpList = $('jpList'), jpLive = false, jpStampText = '';
+
+function skeletonBoard(){
+  jpList.innerHTML =
+    '<div class="jp jp-hero"><div class="sk sk-line" style="width:44%"></div>' +
+      '<div class="sk sk-digits"></div></div>' +
+    '<div class="jp-pair">' +
+      '<div class="jp jp-mini"><div class="sk sk-line" style="width:70%"></div>' +
+        '<div class="sk sk-digits mini"></div></div>' +
+      '<div class="jp jp-mini"><div class="sk sk-line" style="width:70%"></div>' +
+        '<div class="sk sk-digits mini"></div></div>' +
+    '</div>';
+}
+/* The 100% progressive is the number people walk in for, so it gets the
+   headline reel; the other two sit beneath it at a size that reads as
+   secondary rather than competing. */
+function paintBoard(){
+  var rest = POTS.slice(1);
+  jpList.innerHTML =
+    '<div class="jp jp-hero"><div class="jp-label">' + POTS[0].label + '</div>' +
+      '<div class="digits no-anim" id="jp0"></div></div>' +
+    '<div class="jp-pair">' + rest.map(function(p, i){
+      return '<div class="jp jp-mini"><div class="jp-label">' + p.label + '</div>' +
+             '<div class="digits no-anim" id="jp' + (i + 1) + '"></div></div>';
+    }).join('') + '</div>';
+  POTS.forEach(function(p, i){ p.el = $('jp' + i); p.shape = 0; p.last = null; drawPot(p); });
+}
+function fmtPot(v){
+  return '$' + v.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+var REEL = '<span class="reel"><span class="rs">' +
+           '0123456789'.split('').map(function(n){ return '<i>' + n + '</i>'; }).join('') +
+           '</span></span>';
+
+/* Park every reel on the figure it should show. Left-to-right stagger so the
+   board settles like a mechanical sign rather than snapping. */
+function setReels(p, txt, animate){
+  var reels = p.el.querySelectorAll('.rs'), r = 0;
+  for (var i = 0; i < txt.length; i++){
+    var c = txt.charAt(i);
+    if (c < '0' || c > '9') continue;
+    var el = reels[r]; if (!el) break;
+    el.style.transitionDelay = animate ? (r * 45) + 'ms' : '0ms';
+    el.style.transform = 'translateY(calc(-1 * ' + c + ' * var(--dh)))';
+    r++;
+  }
+}
+function drawPot(p){
+  var txt = fmtPot(p.val);
+  if (txt.length !== p.shape){          /* first paint, or the total gained a digit */
+    p.el.classList.add('no-anim');
+    p.el.innerHTML = txt.split('').map(function(c){
+      return (c >= '0' && c <= '9') ? REEL : '<span class="sep">' + c + '</span>';
+    }).join('');
+    p.shape = txt.length;
+    setReels(p, txt.replace(/[0-9]/g, '0'));   /* start from zero, then roll up */
+    /* Read p.target inside the frame, not txt — a live total can land between
+       the build and the roll, and the stale closure would undo it. */
+    p.target = txt;
+    requestAnimationFrame(function(){
+      p.el.classList.remove('no-anim');
+      requestAnimationFrame(function(){ setReels(p, p.target, true); });
+    });
+    p.last = txt; return;
+  }
+  if (txt === p.last) return;
+  p.target = txt;
+  setReels(p, txt, true);
+  p.last = txt;
+}
+function flashBoard(){
+  var b = document.querySelector('.board'); if (!b) return;
+  b.classList.remove('is-fresh'); void b.offsetWidth; b.classList.add('is-fresh');
+  setTimeout(function(){ b.classList.remove('is-fresh'); }, 1700);
+}
+/* The casino updates these once a day from the previous day's jackpot fees,
+   so the board must not animate upward — a counter ticking every few seconds
+   would be inventing money that has not been collected. */
+function stamp(){
+  $('jpStamp').textContent = jpLive
+    ? tr('Updated') + ' ' + jpStampText
+    : tr('Sample feed') + ' · ' + tr('updated daily on the floor');
+}
+
+function loadJackpots(){
+  if (!JACKPOT_URL) return;
+  fetch(JACKPOT_URL, { cache: 'no-store' })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+    .then(function(d){
+      if (!d || !d.ok || !d.pots || !d.pots.length) throw new Error('empty feed');
+      d.pots.forEach(function(p){
+        POTS.forEach(function(local){
+          if (local.key === p.key && typeof p.amount === 'number') local.val = p.amount;
+        });
+      });
+      jpLive = true;
+      jpStampText = d.updated || '';
+      var moved = POTS.some(function(p){ return fmtPot(p.val) !== p.last; });
+      POTS.forEach(function(p){ drawPot(p); });
+      if (moved) flashBoard();
+      stamp();
+    })
+    .catch(function(e){
+      console.warn('[jackpots] falling back to sample figures:', e.message);
+      jpLive = false;
+      stamp();
+    });
+}
+
+skeletonBoard();
+setTimeout(function(){
+  paintBoard();
+  stamp();
+  loadJackpots();
+  setInterval(loadJackpots, 3600000);   /* hourly, in case the daily post lands mid-session */
+}, 650);
+
+/* ═══════════ WAITLIST ═══════════ */
+var GAMES = [
+  {n:"No-Limit Hold'em $2/$3", tables:6, wait:14},
+  {n:'Pure 21.5 Blackjack',    tables:9, wait:0},
+  {n:'Eternal Baccarat',       tables:4, wait:22},
+  {n:'Double Hand Poker',      tables:3, wait:5},
+  {n:'Pai Gow Tiles',          tables:2, wait:0}
+];
+var wl = $('waitlist');
+wl.innerHTML = GAMES.map(function(){
+  return '<div class="row"><div class="row-main"><div class="sk sk-line" style="width:58%"></div>' +
+         '<div class="sk sk-line" style="width:34%;height:9px"></div></div></div>';
+}).join('');
+
+/* The meta line is assembled from several pieces, so a text-node swap can't
+   retranslate it — the rows have to be rebuilt when the language changes.
+   g.joined carries the guest's place in the queue across the rebuild. */
+var wlReady = false;
+function renderWaitlist(){
+  if (!wlReady) return;
+  wl.innerHTML = '';
+  GAMES.forEach(function(g, i){
+    var row = document.createElement('div');
+    row.className = 'row';
+    var open = !g.wait;
+    function metaFor(){
+      return g.tables + ' ' + tr('tables') + ' · ' +
+        (open ? tr('seats open now') : '~' + g.wait + ' ' + tr('min wait'));
+    }
+    function queued(){ return '#' + (i + 2) + ' · ' + tr('listen for your name'); }
+    function label(){
+      return g.joined ? tr('On list') : (open ? tr('Hold seat') : tr('Join list'));
+    }
+    row.innerHTML =
+      '<div class="row-main"><p class="row-name">' + g.n + '</p>' +
+      '<p class="row-meta' + ((open || g.joined) ? ' live' : '') + '">' +
+      (g.joined ? queued() : metaFor()) + '</p></div>';
+    var b = document.createElement('button');
+    b.className = 'btn' + (g.joined ? ' on' : '');
+    b.textContent = label();
+    b.addEventListener('click', function(){
+      g.joined = !g.joined;
+      var meta = row.querySelector('.row-meta');
+      b.classList.toggle('on', g.joined);
+      b.textContent = label();
+      meta.className = 'row-meta' + ((open || g.joined) ? ' live' : '');
+      meta.textContent = g.joined ? queued() : metaFor();
+    });
+    row.appendChild(b);
+    wl.appendChild(row);
+  });
+  var note = document.createElement('p');
+  note.className = 'meta';
+  note.style.marginTop = '14px';
+  note.textContent = tr('Demo data. A live build reads table status from the floor system.');
+  wl.appendChild(note);
+  applyUI();
+}
+setTimeout(function(){ wlReady = true; renderWaitlist(); }, 850);
+
+/* ═══════════ SESSION LIMIT ═══════════ */
+
+/* ═══════════ MENU ═══════════ */
+var MENU = [
+  {cat:'Zone 8 salads', note:'Dining room 11am–12am · to 1am Fri & Sat', items:[
+    {n:'House salad, small',   d:'Mixed greens, croutons, balsamic.',            p:6},
+    {n:'House salad, large',   d:'Feeds two as a side.',                          p:11},
+    {n:'The Greek, small',     d:'Romaine, feta, olives, red wine vinaigrette.',  p:7},
+    {n:'The Greek, large',     d:'',                                              p:12},
+    {n:'Thai chicken noodle',  d:'Poached chicken, chilled rice noodle, peanuts.',p:19},
+    {n:'Salmon & arugula',     d:'Grilled salmon, quinoa, lemon basil.',          p:20},
+    {n:'The Cobb',             d:'Turkey, bacon, avocado, egg, bleu cheese.',     p:20},
+    {n:'Supreme taco salad',   d:'Crisp tortilla shell, beef, beans, guacamole.', p:20}
+  ]},
+  {cat:'Wipeout Wednesday', note:'5–11pm · dine-in · while it lasts', items:[
+    {n:'Loco moco',          d:'The Wednesday plate.',        p:10},
+    {n:'Shrimp soft tacos',  d:'',                            p:10},
+    {n:'Hawaiian pizza',     d:'',                            p:10},
+    {n:'Mai tai',            d:'Tiki list, all $6 tonight.',  p:6},
+    {n:'Blue hawaii',        d:'',                            p:6},
+    {n:'Tropi-cali breeze',  d:'',                            p:6}
+  ]},
+  {cat:'Taco Tuesday', note:'5–11pm · dine-in', items:[
+    {n:'House margarita',      d:'',                    p:8},
+    {n:'Patrón margarita',     d:'',                    p:5},
+    {n:'Modelo or Corona draft',d:'',                   p:5}
+  ]},
+  {cat:'Happy hour', note:'Daily 3–6pm and 9–11pm', items:[
+    {n:'Draft beer',    d:'Ask the runner what is on tap.', p:5},
+    {n:'House wine',    d:'Red or white.',                  p:5},
+    {n:'Well cocktail', d:'',                               p:5}
+  ]},
+  {cat:'Lotus Café', note:'Open 24 hours · price confirmed at the counter', items:[
+    {n:'Bánh mì',                 d:'The reason people walk over at 3am.', p:0},
+    {n:'Breakfast sandwich',      d:'',                                    p:0},
+    {n:'Fresh-baked pastry',      d:'',                                    p:0},
+    {n:"Lee's Vietnamese iced coffee", d:'Strong, sweet, and the long-session drink.', p:0},
+    {n:'Espresso or tea',         d:'Full espresso bar.',                  p:0}
+  ]}
+];
+
+var cart = {}, tableNo = null, smsOn = false, phone = '', payMode = 'runner';
+var activeOrder = null, timers = [];
+
+function zoneFor(n){
+  if (n <= 24) return 'Poker section';
+  if (n <= 44) return 'Pure 21.5 section';
+  if (n <= 54) return 'Baccarat section';
+  return 'Pai gow section';
+}
+function lines(){
+  var out = [], sub = 0;
+  MENU.forEach(function(g){ g.items.forEach(function(it){
+    var q = cart[it.n] || 0;
+    if (q){ out.push({n:it.n, q:q, amt:q * it.p}); sub += q * it.p; }
+  });});
+  return {lines:out, sub:sub};
+}
+function syncCart(){
+  var c = lines(), count = 0;
+  c.lines.forEach(function(l){ count += l.q; });
+  $('cartCount').textContent = count + ' ' + tr(count === 1 ? 'item' : 'items');
+  $('cartTotal').textContent = money(c.sub);
+  var onOrder = $('order').classList.contains('is-on');
+  $('cartbar').classList.toggle('is-on', count > 0 && onOrder && !!tableNo);
+  var badge = $('tabBadge');
+  badge.textContent = count;
+  badge.classList.toggle('is-on', count > 0 && !onOrder);
+}
+function buildMenu(){
+  var wrap = $('menu');
+  wrap.innerHTML = '';
+  MENU.forEach(function(g){
+    var h = document.createElement('div');
+    h.className = 'block-head mcat';
+    h.innerHTML = '<h3 class="display t-md">' + g.cat + '</h3>' +
+      (g.note ? '<span class="meta">' + g.note + '</span>' : '');
+    wrap.appendChild(h);
+
+    var card = document.createElement('div');
+    card.className = 'card';
+    g.items.forEach(function(it){
+      var row = document.createElement('div');
+      row.className = 'mitem';
+      row.innerHTML =
+        '<div class="mitem-main"><p class="mitem-name">' + it.n + '</p>' +
+        (it.d ? '<p class="mitem-desc">' + it.d + '</p>' : '') +
+        '<p class="mitem-price">' + (it.p ? money(it.p) : 'Price at the counter') + '</p></div>';
+
+      if (!it.p){
+        var ask = document.createElement('span');
+        ask.className = 'meta';
+        ask.textContent = 'Call 484-6298';
+        row.appendChild(ask);
+        card.appendChild(row);
+        return;
+      }
+
+      var step = document.createElement('div');
+      step.className = 'step zero';
+      var minus = document.createElement('button');
+      minus.className = 'minus'; minus.textContent = '\u2212';
+      minus.setAttribute('aria-label', 'Remove one ' + it.n);
+      var qty = document.createElement('span');
+      qty.className = 'qty'; qty.textContent = '0';
+      var plus = document.createElement('button');
+      plus.textContent = '+';
+      plus.setAttribute('aria-label', 'Add ' + it.n);
+
+      function draw(){
+        var q = cart[it.n] || 0;
+        qty.textContent = q;
+        step.classList.toggle('zero', !q);
+        syncCart();
+        var bar = $('cartbar').querySelector('button');
+        bar.classList.remove('bump');
+        void bar.offsetWidth;
+        bar.classList.add('bump');
+      }
+      plus.addEventListener('click', function(){ cart[it.n] = (cart[it.n] || 0) + 1; draw(); });
+      minus.addEventListener('click', function(){
+        cart[it.n] = Math.max(0, (cart[it.n] || 0) - 1);
+        if (!cart[it.n]) delete cart[it.n];
+        draw();
+      });
+      step.appendChild(minus); step.appendChild(qty); step.appendChild(plus);
+      row.appendChild(step);
+      card.appendChild(row);
+    });
+    wrap.appendChild(card);
+  });
+}
+function openTable(n){
+  tableNo = n;
+  $('tnum').textContent = tr('Table') + ' ' + n;
+  $('tzone').textContent = zoneFor(n);
+  $('tableKnown').hidden = false;
+  $('tableUnknown').hidden = true;
+  syncCart();
+  applyUI();
+}
+$('setTable').addEventListener('click', function(){
+  var v = +$('tableIn').value;
+  if (!v || v < 1 || v > 60){
+    $('tableErr').textContent = tr('Tables run 1 to 60. Check the number on the tent.');
+    return;
+  }
+  $('tableErr').textContent = '';
+  openTable(v);
+});
+$('tableIn').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') $('setTable').click();
+});
+$('changeTable').addEventListener('click', function(){
+  tableNo = null;
+  $('tableKnown').hidden = true;
+  $('tableUnknown').hidden = false;
+  syncCart();
+});
+
+/* ═══════════ SHEET ═══════════ */
+var scrim = $('scrim'), sheet = $('sheet'), lastFocus = null;
+function openSheet(html){
+  lastFocus = document.activeElement;
+  sheet.innerHTML = '<div class="grabber"></div>' + html;
+  scrim.classList.add('is-on');
+  var f = sheet.querySelector('button, input, textarea, a');
+  if (f) f.focus();
+}
+function closeSheet(){
+  scrim.classList.remove('is-on');
+  if (lastFocus) lastFocus.focus();
+}
+scrim.addEventListener('click', function(e){ if (e.target === scrim) closeSheet(); });
+addEventListener('keydown', function(e){
+  var open = document.querySelector('.scrim.is-on');
+  if (!open) return;
+  if (e.key === 'Escape'){
+    if (open.id === 'askScrim') closeAsk();
+    else if (open.id === 'langScrim') closeLang();
+    else closeSheet();
+    return;
+  }
+  if (e.key !== 'Tab') return;
+  var f = open.querySelectorAll('button, input, textarea, a, [tabindex]:not([tabindex="-1"])');
+  if (!f.length) return;
+  var first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+});
+
+function review(){
+  var c = lines();
+  if (!c.lines.length) return;
+  var html =
+    '<div class="sheet-head"><h3 class="display t-lg">Table ' + tableNo + '</h3>' +
+    '<button class="close" data-close>Close</button></div>';
+  c.lines.forEach(function(l){
+    html += '<div class="line"><span><span class="q">' + l.q + '\u00d7</span>' + l.n + '</span>' +
+            '<span class="mono">' + money(l.amt) + '</span></div>';
+  });
+  html +=
+    '<div class="total"><span class="display t-md">Total</span><span class="amt">' + money(c.sub) + '</span></div>' +
+    '<div class="chips" id="payChips" role="group" aria-label="Payment">' +
+      '<button class="chip" aria-pressed="' + (payMode === 'runner') + '" data-pay="runner">Pay the runner</button>' +
+      '<button class="chip" aria-pressed="' + (payMode === 'seat') + '" data-pay="seat">Charge my account</button>' +
+    '</div>' +
+    '<textarea class="note" rows="2" id="orderNote" aria-label="Notes for the kitchen" ' +
+      'placeholder="Allergies, no onions, extra napkins\u2026"></textarea>' +
+    '<label class="switch"><input type="checkbox" id="smsOn"' + (smsOn ? ' checked' : '') + '>' +
+      '<span class="switch-box"></span><span>Text me when it\u2019s on the way</span></label>' +
+    '<div id="phoneWrap"' + (smsOn ? '' : ' hidden') + '>' +
+      '<input class="field" id="phoneIn" type="tel" inputmode="tel" style="margin-top:12px" ' +
+        'placeholder="(408) 555-0123" value="' + phone + '" aria-label="Mobile number">' +
+      '<p class="fine">Two messages per order: one when the runner leaves the kitchen, one on arrival. ' +
+      'Message and data rates may apply. Reply STOP to stop.</p>' +
+    '</div>' +
+    '<p class="err" id="orderErr" role="alert"></p>' +
+    '<button class="send" id="sendBtn">Send to kitchen</button>' +
+    '<p class="meta" style="margin-top:12px;text-align:center">Prototype — nothing is charged, no number is stored.</p>';
+
+  openSheet(html);
+  sheet.querySelector('[data-close]').addEventListener('click', closeSheet);
+  sheet.querySelectorAll('#payChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      payMode = ch.dataset.pay;
+      sheet.querySelectorAll('#payChips .chip').forEach(function(x){
+        x.setAttribute('aria-pressed', x.dataset.pay === payMode);
+      });
+    });
+  });
+  var sw = sheet.querySelector('#smsOn');
+  sw.addEventListener('change', function(){
+    smsOn = sw.checked;
+    sheet.querySelector('#phoneWrap').hidden = !smsOn;
+    if (smsOn) sheet.querySelector('#phoneIn').focus();
+  });
+  var pin = sheet.querySelector('#phoneIn');
+  pin.addEventListener('input', function(){
+    var d = pin.value.replace(/\D/g,'').slice(0,10);
+    pin.value = d.length > 6 ? '(' + d.slice(0,3) + ') ' + d.slice(3,6) + '-' + d.slice(6)
+              : d.length > 3 ? '(' + d.slice(0,3) + ') ' + d.slice(3)
+              : d;
+    phone = pin.value;
+  });
+  sheet.querySelector('#sendBtn').addEventListener('click', send);
+  sheet.querySelector('#orderNote').placeholder = tr('Allergies, no onions, extra napkins…');
+  applyUI();
+}
+$('reviewBtn').addEventListener('click', review);
+
+/* ═══════════ TRACKING ═══════════ */
+var STAGES = [
+  {label:'Order in',    say:'The kitchen has your ticket.'},
+  {label:'On the pass', say:'Cooking now.'},
+  {label:'Runner up',   say:'A runner is walking it over to you.'},
+  {label:'At your seat',say:'Delivered. Enjoy it.'}
+];
+function paintTrack(){
+  var w = $('trackWrap');
+  if (!activeOrder){ w.innerHTML = ''; return; }
+  var o = activeOrder, h =
+    '<div class="track"><div class="track-head">' +
+    '<span class="meta">' + o.ref + ' · ' + o.count + (o.count === 1 ? ' item' : ' items') + '</span>' +
+    '<span class="mono" style="font-size:12.5px;color:var(--red)">' +
+    (o.stage === 3 ? tr('Delivered') : '~' + o.eta + ' min') + '</span></div><div class="stages">';
+  STAGES.forEach(function(s, i){
+    var cls = i < o.stage ? 'done' : (i === o.stage ? 'now done' : '');
+    h += '<div class="stage ' + cls + '"><div class="stage-dot"></div>' +
+         '<div class="stage-label">' + tr(s.label) + '</div></div>';
+  });
+  h += '</div><p class="track-say">' + tr(STAGES[o.stage].say) + '</p>' +
+       '<p class="track-sms">' + (o.phone ? 'Texting updates to ' + o.phone : 'No texts — follow it here.') +
+       '</p></div>';
+  w.innerHTML = h;
+}
+var toast = $('toast'), toastTimer;
+$('toastIn').addEventListener('click', function(){ toast.classList.remove('is-on'); });
+function text(msg){
+  if (!activeOrder || !activeOrder.phone) return;
+  $('toastBody').textContent = msg;
+  toast.classList.add('is-on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toast.classList.remove('is-on'); }, 7000);
+}
+function advance(){
+  if (!activeOrder || activeOrder.stage >= 3) return;
+  activeOrder.stage++;
+  activeOrder.eta = Math.max(1, activeOrder.eta - 4);
+  paintTrack();
+  if (activeOrder.stage === 2)
+    text('Your order ' + activeOrder.ref + ' is on its way to table ' + activeOrder.table +
+         '. About 2 minutes. — M8trix');
+  if (activeOrder.stage === 3)
+    text('Delivered to table ' + activeOrder.table + '. Enjoy. Reply STOP to stop order texts. — M8trix');
+}
+function send(){
+  var c = lines(), count = 0;
+  c.lines.forEach(function(l){ count += l.q; });
+  var digits = phone.replace(/\D/g,'');
+  if (smsOn && digits.length !== 10){
+    sheet.querySelector('#orderErr').textContent = tr('Enter a 10-digit mobile number, or switch texts off.');
+    return;
+  }
+  activeOrder = {
+    ref: 'M8-' + Math.floor(1000 + Math.random() * 9000),
+    table: tableNo, count: count, eta: 12 + count * 2, stage: 0,
+    phone: smsOn ? phone : ''
+  };
+  sheet.innerHTML =
+    '<div class="grabber"></div>' +
+    '<div class="sheet-head"><h3 class="display t-lg">Ticket in</h3>' +
+    '<button class="close" data-close>Done</button></div>' +
+    '<div class="confirm">' +
+    '<div class="confirm-ring"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" ' +
+      'stroke="#E03A48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M4 12.5 9.5 18 20 7"/></svg></div>' +
+    '<p class="eyebrow">' + activeOrder.ref + '</p>' +
+    '<h4 class="display t-xl" style="margin-top:9px">Table ' + activeOrder.table +
+      ' · ' + activeOrder.eta + ' min</h4>' +
+    '<p class="prose" style="margin-top:11px">' +
+      (payMode === 'runner' ? 'The runner takes payment at your seat.' : 'It goes on your account.') +
+      '<br>' + (activeOrder.phone
+        ? 'We\u2019ll text ' + activeOrder.phone + ' when the runner leaves the kitchen.'
+        : 'Follow it on the strip above the menu.') +
+    '</p></div>' +
+    '<button class="send" id="againBtn">Back to the menu</button>';
+  sheet.querySelector('[data-close]').addEventListener('click', closeSheet);
+  sheet.querySelector('#againBtn').addEventListener('click', closeSheet);
+
+  cart = {};
+  buildMenu();
+  syncCart();
+  paintTrack();
+  applyUI();
+  timers.forEach(clearTimeout);
+  timers = [7000, 15000, 24000].map(function(ms){ return setTimeout(advance, ms); });
+}
+
+/* ═══════════ ASK — floor concierge ═══════════ */
+var L10N = {
+  en:{
+    micno:'This browser cannot do speech recognition. Chrome or Safari can — or just type your question.',
+    micframe:'The microphone is blocked inside an embedded preview. Open this page in its own browser tab and try again.',
+    micneed:'The microphone needs a secure page. Open this over https or localhost rather than a plain file, then allow the mic.',
+    micoff:'Microphone access is off. Turn it on in your browser settings, or just type.',
+    mic:'Ask by voice', spk:'Read answers aloud', hearing:'Listening…',
+    off:'From the house notes — a floor supervisor can confirm:',
+    name:'English',
+    title:'Floor concierge',
+    close:'Close',
+    ph:'Ask about games, food, the building…',
+    foot:'AI answers can be wrong — check anything that matters with staff. 21+ · 1-800-GAMBLER',
+    greet:'Ask me anything — how a game is dealt, what the jackpot rules mean, where to eat, ' +
+          'how to get here. I will tell you when to ask a floor supervisor instead.',
+    err:'I cannot reach the assistant right now. Any floor supervisor can answer the same ' +
+        'question, or call 408-244-3333.',
+    starters:[
+      ['Pure 21.5 Blackjack','How is Pure 21.5 Blackjack different from regular blackjack?'],
+      ['Pai gow tiles','How do I read pai gow tiles as a beginner?'],
+      ['First time here','It is my first time at a card room. What should I know before I sit down?']
+    ]
+  },
+  vi:{
+    micno:'Trình duyệt này không nhận dạng giọng nói. Hãy dùng Chrome hoặc Safari, hoặc gõ câu hỏi.',
+    micframe:'Micro bị chặn khi trang nằm trong khung xem trước. Hãy mở trang này ở tab riêng rồi thử lại.',
+    micneed:'Micro cần trang bảo mật. Hãy mở qua https hoặc localhost thay vì mở tệp trực tiếp, rồi cho phép micro.',
+    micoff:'Micro chưa được cấp quyền. Bật trong cài đặt trình duyệt, hoặc bạn cứ gõ chữ.',
+    mic:'Hỏi bằng giọng nói', spk:'Đọc câu trả lời', hearing:'Đang nghe…',
+    off:'Theo tài liệu của sòng bài — nhân viên quản lý sàn có thể xác nhận lại:',
+    name:'Vietnamese (Tiếng Việt)',
+    title:'Trợ lý sàn',
+    close:'Đóng',
+    ph:'Hỏi về trò chơi, đồ ăn, khu vực…',
+    foot:'Câu trả lời của AI có thể sai — việc quan trọng xin hỏi lại nhân viên. 21+ · 1-800-GAMBLER',
+    greet:'Bạn hỏi gì cũng được — cách chia bài của từng trò, luật jackpot, chỗ ăn uống, đường đi tới đây. ' +
+          'Khi nào cần hỏi trực tiếp nhân viên quản lý sàn, tôi sẽ nói rõ.',
+    err:'Hiện không kết nối được. Nhân viên quản lý sàn có thể trả lời giúp bạn, ' +
+        'hoặc gọi 408-244-3333.',
+    starters:[
+      ['Pure 21.5','Pure 21.5 Blackjack khác blackjack thường ở chỗ nào?'],
+      ['Bài pai gow','Người mới nên đọc quân bài pai gow tiles như thế nào?'],
+      ['Lần đầu tới','Lần đầu tôi tới sòng bài. Cần biết gì trước khi ngồi vào bàn?']
+    ]
+  },
+  zh:{
+    micno:'此浏览器不支持语音识别。请改用 Chrome 或 Safari，或直接打字提问。',
+    micframe:'在嵌入式预览中麦克风被禁用。请在独立的浏览器标签页中打开本页后再试。',
+    micneed:'麦克风需要安全页面。请通过 https 或 localhost 打开，而不是直接打开文件，然后允许使用麦克风。',
+    micoff:'麦克风权限未开启。请在浏览器设置中允许，或直接打字提问。',
+    mic:'语音提问', spk:'朗读回答', hearing:'正在聆听…',
+    off:'以下取自场内资料 — 楼面主管可以再确认：',
+    name:'Chinese (中文)',
+    title:'楼面助理',
+    close:'关闭',
+    ph:'问问牌局、餐饮、场内设施…',
+    foot:'AI 的回答可能有误 — 重要的事请向员工确认。21+ · 1-800-GAMBLER',
+    greet:'什么都可以问 — 牌局怎么发牌、累积奖金的规则、哪里吃饭、怎么过来。' +
+          '需要找楼面主管的时候，我会直接告诉你。',
+    err:'现在连不上助手。楼面主管可以回答同样的问题，或致电 408-244-3333。',
+    starters:[
+      ['Pure 21.5 玩法','Pure 21.5 Blackjack 和一般二十一点有什么不同？'],
+      ['牌九怎么看','新手该怎么看牌九（Pai Gow Tiles）的牌面？'],
+      ['第一次来','我第一次来牌室，坐下前需要知道什么？']
+    ]
+  },
+  es:{
+    micno:'Este navegador no reconoce voz. Usa Chrome o Safari, o escribe tu pregunta.',
+    micframe:'El micrófono está bloqueado dentro de una vista previa incrustada. Abre esta página en su propia pestaña.',
+    micneed:'El micrófono necesita una página segura. Ábrela por https o localhost en vez de como archivo, y permite el micrófono.',
+    micoff:'El micrófono está bloqueado. Actívalo en los ajustes del navegador, o escribe.',
+    mic:'Preguntar por voz', spk:'Leer respuestas en voz alta', hearing:'Escuchando…',
+    off:'Según las notas de la casa; un supervisor puede confirmarlo:',
+    name:'Spanish (Español)',
+    title:'Conserje de sala',
+    close:'Cerrar',
+    ph:'Pregunta sobre juegos, comida, el local…',
+    foot:'Las respuestas de IA pueden estar equivocadas: confirma lo importante con el personal. 21+ · 1-800-GAMBLER',
+    greet:'Pregúntame lo que sea: cómo se reparte cada juego, qué significan las reglas del jackpot, ' +
+          'dónde comer, cómo llegar. Te diré cuándo conviene preguntarle a un supervisor.',
+    err:'No puedo conectar ahora. Cualquier supervisor de sala puede responderte, ' +
+        'o llama al 408-244-3333.',
+    starters:[
+      ['Pure 21.5','¿En qué se diferencia Pure 21.5 Blackjack del blackjack normal?'],
+      ['Pai gow','¿Cómo leo las fichas de pai gow siendo principiante?'],
+      ['Primera vez','Es mi primera vez en un card room. ¿Qué debo saber antes de sentarme?']
+    ]
+  }
+};
+var LANG = 'en';
+
+/* ═══════════════════════════════════════════════════════════════
+   APP LANGUAGE
+   English is the source. Each entry maps the exact on-screen text to
+   its translations. Anything absent stays English, so a missing string
+   degrades to readable rather than blank.
+   Proper nouns stay untranslated on purpose: game names, venue names
+   and menu items are what the dealer, the podium and the kitchen say
+   out loud, so a guest needs to recognise them as printed.
+   ═══════════════════════════════════════════════════════════════ */
+var UI = {
+/* nav + header */
+'Floor':{vi:'Sàn',zh:'场内',es:'Sala'},
+'Games':{vi:'Trò chơi',zh:'牌局',es:'Juegos'},
+'Order':{vi:'Gọi món',zh:'点餐',es:'Pedir'},
+'Dining':{vi:'Ăn uống',zh:'餐饮',es:'Comida'},
+'Visit':{vi:'Đến đây',zh:'到访',es:'Visitar'},
+'Open · 24/7':{vi:'Mở cửa · 24/7',zh:'全天营业 · 24/7',es:'Abierto · 24/7'},
+
+/* floor — jackpots */
+'Progressive jackpots':{vi:'Jackpot lũy tiến',zh:'累积奖金',es:'Jackpots progresivos'},
+'Linked tables':{vi:'Bàn liên kết',zh:'联机桌台',es:'Mesas enlazadas'},
+'Rules & qualifying hands':{vi:'Luật và bài đủ điều kiện',zh:'规则与中奖牌型',es:'Reglas y manos válidas'},
+'Totals are published once a day from the previous day\u2019s jackpot fees, so the real amount runs ahead of the figure shown.':{vi:'Số liệu mẫu cho bản thử. Số thật được niêm yết tại sàn.',zh:'此为示例数据。实际金额以场内公告为准。',es:'Cifras de muestra. Los totales reales se publican en la sala.'},
+
+/* floor — waitlist */
+'Seat me':{vi:'Xếp chỗ',zh:'排队入座',es:'Consígueme sitio'},
+'Live':{vi:'Trực tiếp',zh:'实时',es:'En vivo'},
+'Join list':{vi:'Ghi tên',zh:'排队',es:'Apuntarme'},
+'Hold seat':{vi:'Giữ chỗ',zh:'留座',es:'Reservar'},
+'On list':{vi:'Đã ghi tên',zh:'已排队',es:'En lista'},
+'Demo data. A live build reads table status from the floor system.':{vi:'Dữ liệu mẫu. Bản chính thức sẽ lấy trạng thái bàn từ hệ thống sàn.',zh:'示例数据。正式版本将从场内系统读取桌台状态。',es:'Datos de ejemplo. La versión real leería el estado de las mesas del sistema.'},
+
+/* floor — this week */
+'This week':{vi:'Tuần này',zh:'本周',es:'Esta semana'},
+'Happy hour':{vi:'Giờ vàng',zh:'欢乐时光',es:'Happy hour'},
+'Half-price select appetizers. $5 draft beer, house wine and well cocktails.':{vi:'Giảm nửa giá một số món khai vị. Bia tươi, rượu vang nhà và cocktail cơ bản $5.',zh:'指定前菜半价。生啤、餐厅葡萄酒与基础调酒各 $5。',es:'Aperitivos seleccionados a mitad de precio. Cerveza de barril, vino de la casa y cócteles a $5.'},
+'Taco Tuesday':{vi:'Thứ Ba Taco',zh:'塔可星期二',es:'Martes de tacos'},
+'Half off south-of-the-border plates. $5 Patrón margaritas and draft.':{vi:'Giảm nửa giá các món Mexico. Margarita Patrón và bia tươi $5.',zh:'墨西哥风味餐点半价。Patrón 玛格丽特与生啤 $5。',es:'Platos mexicanos a mitad de precio. Margaritas Patrón y barril a $5.'},
+'Wipeout Wednesday':{vi:'Thứ Tư Wipeout',zh:'Wipeout 星期三',es:'Miércoles Wipeout'},
+'$6 tiki drinks, and loco moco, shrimp tacos or Hawaiian pizza at $10.':{vi:'Cocktail tiki $6; loco moco, taco tôm hoặc pizza Hawaii $10.',zh:'Tiki 调酒 $6；loco moco、鲜虾塔可或夏威夷披萨 $10。',es:'Cócteles tiki a $6; loco moco, tacos de camarón o pizza hawaiana a $10.'},
+'Prime rib':{vi:'Sườn bò prime rib',zh:'烤肋眼牛排',es:'Prime rib'},
+'The weekly roast, on the gaming floor menu.':{vi:'Món nướng hàng tuần, có trong thực đơn phục vụ tại sàn.',zh:'每周烤肉特餐，场内餐单供应。',es:'El asado semanal, en el menú de la sala.'},
+
+/* floor — concierge card */
+'Ask anything':{vi:'Hỏi bất cứ điều gì',zh:'随便问',es:'Pregunta lo que sea'},
+'Floor concierge':{vi:'Trợ lý sàn',zh:'楼面助理',es:'Conserje de sala'},
+"Rules for a game you've never played, what's open at 3am, how the bad beat qualifies, where to park. Ask in plain words.":{vi:'Luật của trò bạn chưa từng chơi, chỗ nào mở lúc 3 giờ sáng, bad beat tính thế nào, đậu xe ở đâu. Cứ hỏi bình thường.',zh:'没玩过的牌怎么打、凌晨三点哪里还开、bad beat 怎么算、车停哪里。用平常话问就行。',es:'Reglas de un juego que nunca jugaste, qué abre a las 3am, cómo califica el bad beat, dónde estacionar. Pregunta con tus palabras.'},
+
+/* floor — session limit */
+
+/* games */
+'Table gaming':{vi:'Trò chơi trên bàn',zh:'桌上游戏',es:'Juegos de mesa'},
+"What's dealt here":{vi:'Ở đây chia những gì',zh:'这里发什么牌',es:'Qué se reparte aquí'},
+'Live tables':{vi:'Bàn đang chơi',zh:'现场桌台',es:'Mesas en vivo'},
+'California rules':{vi:'Luật California',zh:'加州规则',es:'Reglas de California'},
+'Player-banked':{vi:'Người chơi làm cái',zh:'玩家坐庄',es:'Banca del jugador'},
+'How it plays':{vi:'Cách chơi',zh:'玩法说明',es:'Cómo se juega'},
+'Poker room':{vi:'Phòng poker',zh:'扑克室',es:'Sala de póker'},
+'New to a table?':{vi:'Lần đầu ngồi bàn?',zh:'第一次上桌？',es:'¿Primera vez en una mesa?'},
+'Join the academy':{vi:'Tham gia Card Academy',zh:'加入 Card Academy',es:'Únete a la academia'},
+
+/* order */
+'Order to your seat':{vi:'Gọi món tới chỗ ngồi',zh:'点餐送到座位',es:'Pide a tu asiento'},
+'Start order':{vi:'Bắt đầu gọi món',zh:'开始点餐',es:'Empezar pedido'},
+'Change':{vi:'Đổi',zh:'更改',es:'Cambiar'},
+'A runner brings it to your seat. Keep playing.':{vi:'Nhân viên sẽ mang tới tận chỗ. Bạn cứ chơi tiếp.',zh:'服务员会送到你的座位，你继续玩就好。',es:'Un runner te lo lleva al asiento. Sigue jugando.'},
+'Price at the counter':{vi:'Hỏi giá tại quầy',zh:'价格请至柜台询问',es:'Precio en el mostrador'},
+'Total':{vi:'Tổng cộng',zh:'合计',es:'Total'},
+'Pay the runner':{vi:'Trả cho nhân viên',zh:'付给送餐员',es:'Pagar al runner'},
+'Charge my account':{vi:'Ghi vào tài khoản',zh:'记入我的账户',es:'Cargar a mi cuenta'},
+'Send to kitchen':{vi:'Gửi xuống bếp',zh:'送出订单',es:'Enviar a cocina'},
+'Ticket in':{vi:'Đã nhận đơn',zh:'订单已送出',es:'Pedido enviado'},
+'Back to the menu':{vi:'Về thực đơn',zh:'返回菜单',es:'Volver al menú'},
+'Done':{vi:'Xong',zh:'完成',es:'Listo'},
+'Close':{vi:'Đóng',zh:'关闭',es:'Cerrar'},
+
+/* tracking */
+'Order in':{vi:'Đã nhận',zh:'已下单',es:'Recibido'},
+'On the pass':{vi:'Đang nấu',zh:'制作中',es:'En cocina'},
+'Runner up':{vi:'Đang mang tới',zh:'正在送来',es:'En camino'},
+'At your seat':{vi:'Đã tới bàn',zh:'已送达',es:'En tu mesa'},
+'Delivered':{vi:'Đã giao',zh:'已送达',es:'Entregado'},
+
+/* dining */
+'Five kitchens, one building':{vi:'Năm nhà bếp trong một tòa nhà',zh:'一栋楼，五个厨房',es:'Cinco cocinas, un edificio'},
+'Eat here':{vi:'Ăn ở đây',zh:'在这里吃',es:'Comer aquí'},
+'Gaming floor service':{vi:'Phục vụ tại sàn',zh:'场内送餐服务',es:'Servicio en la sala'},
+'Weekly specials':{vi:'Ưu đãi trong tuần',zh:'每周特惠',es:'Especiales semanales'},
+'Sunday wine':{vi:'Rượu vang Chủ Nhật',zh:'周日葡萄酒',es:'Domingo de vino'},
+'Hours vary — the podium will know.':{vi:'Giờ mở cửa thay đổi — hỏi quầy tiếp tân.',zh:'营业时间不固定 — 请询问服务台。',es:'El horario varía; pregunta en el podio.'},
+'Menu & hours':{vi:'Thực đơn và giờ mở cửa',zh:'菜单与营业时间',es:'Menú y horarios'},
+
+/* visit */
+'Getting there':{vi:'Đường đến',zh:'交通',es:'Cómo llegar'},
+'Directions':{vi:'Chỉ đường',zh:'导航',es:'Cómo llegar'},
+'Also in the building':{vi:'Cũng trong tòa nhà',zh:'楼内其他设施',es:'También en el edificio'},
+'Event Tower':{vi:'Event Tower',zh:'Event Tower 活动楼层',es:'Event Tower'},
+'Request a date':{vi:'Đặt lịch',zh:'预约日期',es:'Solicitar fecha'},
+'The website':{vi:'Trang web',zh:'官方网站',es:'El sitio web'},
+'Jobs':{vi:'Việc làm',zh:'招聘',es:'Empleo'},
+'See openings':{vi:'Xem vị trí tuyển dụng',zh:'查看职位',es:'Ver vacantes'},
+'Sign up':{vi:'Đăng ký',zh:'注册',es:'Registrarse'},
+
+/* games, order, dining, visit — full-page copy */
+"What's dealt here":{vi:"Các trò tại đây",zh:"这里发什么牌",es:"Lo que se reparte aquí"},
+"Hold'em · Omaha · tournaments":{vi:"Hold'em · Omaha · giải đấu",zh:"Hold'em · Omaha · 锦标赛",es:"Hold'em · Omaha · torneos"},
+"Player against player, with the house taking a seat fee rather than a stake in the hand. Bad beat and progressive promotions run on participating tables.":{vi:"Người chơi đấu với người chơi; nhà cái thu phí chỗ ngồi chứ không đặt cược trong ván bài. Khuyến mãi bad beat và jackpot lũy tiến áp dụng tại các bàn tham gia.",zh:"玩家对玩家，赌场只收取座位费，不参与下注。参与的牌桌设有 bad beat 和累积奖金活动。",es:"Jugador contra jugador; la casa cobra una tarifa por asiento en lugar de apostar en la mano. Las promociones de bad beat y progresivas corren en las mesas participantes."},
+"The card-room version of blackjack. State rules mean a rotating player-dealer rather than a house bank, and the 21.5 variant changes how hands qualify.":{vi:"Phiên bản blackjack của sòng bài California. Theo luật tiểu bang, người chia bài luân phiên giữa những người chơi thay vì nhà cái làm nhà, và biến thể 21.5 thay đổi cách tính bài thắng.",zh:"牌房版本的二十一点。按州法规，庄家由玩家轮流担任，而非赌场坐庄；21.5 玩法改变了牌型的成立方式。",es:"La versión de card room del blackjack. Las reglas estatales exigen un jugador-repartidor rotativo en vez de una banca de la casa, y la variante 21.5 cambia cómo califican las manos."},
+"Baccarat adapted for California card rooms, with side wagers at participating tables.":{vi:"Baccarat được điều chỉnh cho sòng bài California, có cược phụ tại các bàn tham gia.",zh:"为加州牌房调整的百家乐，参与的牌桌可下副注。",es:"Bacará adaptado a los card rooms de California, con apuestas laterales en las mesas participantes."},
+"Seven cards split into a five-card high hand and a two-card low hand. Slow-paced, and a forgiving first table if you're learning.":{vi:"Bảy lá bài chia thành một bộ năm lá cao và một bộ hai lá thấp. Nhịp chậm, và là bàn đầu tiên dễ chịu nếu bạn đang học.",zh:"七张牌分成五张的大牌和两张的小牌。节奏慢，如果你刚开始学，这是一张宽容的入门牌桌。",es:"Siete cartas divididas en una mano alta de cinco y una baja de dos. Ritmo pausado, y una primera mesa indulgente si estás aprendiendo."},
+"The tile game, dealt with a bonus wager. Ranking the tiles takes practice — the Card Academy walkthrough covers it.":{vi:"Trò chơi quân bài domino, có kèm cược thưởng. Xếp hạng quân bài cần luyện tập — hướng dẫn của Card Academy có giải thích rõ.",zh:"骨牌游戏，附带奖励下注。牌型排序需要练习——Card Academy 的教学有完整讲解。",es:"El juego de fichas, con una apuesta de bonificación. Ordenar las fichas requiere práctica — el tutorial de Card Academy lo cubre."},
+"A tutorial series built with gaming-industry pros, covering fundamentals and strategy for every game on this floor. Online or in person.":{vi:"Loạt hướng dẫn xây dựng cùng các chuyên gia trong ngành, bao quát kiến thức cơ bản và chiến thuật cho mọi trò tại sàn này. Trực tuyến hoặc trực tiếp.",zh:"与业内专业人士共同制作的教学系列，涵盖场内每种牌局的基础与策略。线上或现场均可。",es:"Una serie de tutoriales creada con profesionales del sector, que cubre fundamentos y estrategia de cada juego de esta sala. En línea o en persona."},
+"Table —":{vi:"Bàn —",zh:"桌号 —",es:"Mesa —"},
+"This is a short list.":{vi:"Đây chỉ là danh sách rút gọn.",zh:"这只是一份简短清单。",es:"Esta es una lista corta."},
+"The full Zone 8 menu":{vi:"Thực đơn Zone 8 đầy đủ",zh:"完整的 Zone 8 菜单",es:"El menú completo de Zone 8"},
+"has everything else, and the runner can take an order from it.":{vi:"có đầy đủ mọi thứ khác, và nhân viên phục vụ có thể nhận gọi món từ đó.",zh:"包含其余全部餐点，服务员可以照单帮您点。",es:"tiene todo lo demás, y el runner puede tomar un pedido de él."},
+"Prices as published; specials are dine-in and subject to availability.":{vi:"Giá theo niêm yết; món đặc biệt chỉ dùng tại chỗ và tùy tình trạng còn hàng.",zh:"价格以公布为准；特惠仅限堂食，售完为止。",es:"Precios según lo publicado; los especiales son para consumo en el local y están sujetos a disponibilidad."},
+"A live build prints to the kitchen and settles through the floor POS.":{vi:"Bản chạy thật sẽ in phiếu xuống bếp và thanh toán qua hệ thống POS của sàn.",zh:"正式版本会把订单打印到厨房，并通过场内 POS 结算。",es:"Una versión en producción imprime en la cocina y se liquida por el POS del salón."},
+"21+ · please play responsibly · 1-800-GAMBLER":{vi:"21+ · vui lòng chơi có trách nhiệm · 1-800-GAMBLER",zh:"限 21 岁以上 · 请理性娱乐 · 1-800-GAMBLER",es:"21+ · juegue responsablemente · 1-800-GAMBLER"},
+"Scan the code":{vi:"Quét mã",zh:"扫描二维码",es:"Escanee el código"},
+"on your table":{vi:"trên bàn của bạn",zh:"就在您的桌上",es:"de su mesa"},
+"Every table carries a numbered QR tent, 1 through 60. Scanning it opens this menu with your table already attached, so the runner knows exactly where to go.":{vi:"Mỗi bàn đều có một thẻ QR đánh số từ 1 đến 60. Quét thẻ sẽ mở thực đơn này kèm sẵn số bàn của bạn, để nhân viên biết chính xác cần mang tới đâu.",zh:"每张桌子都有编号 1 到 60 的二维码立牌。扫描后会打开本菜单并自动带上您的桌号，服务员就知道该送到哪里。",es:"Cada mesa lleva un cartel con código QR numerado, del 1 al 60. Al escanearlo se abre este menú con su mesa ya adjunta, para que el runner sepa exactamente adónde ir."},
+"No code in reach? Enter the number printed on the tent.":{vi:"Không thấy mã? Nhập số in trên thẻ để bàn.",zh:"够不到二维码？输入立牌上印的号码。",es:"¿No alcanza el código? Ingrese el número impreso en el cartel."},
+"Happy hour runs twice a day, 3–6pm and 9–11pm: half-price select appetizers, and $5 draft beer, house wine and well cocktails. Prime rib on Thursday and Sunday nights.":{vi:"Happy hour diễn ra hai lần mỗi ngày, 3–6 giờ chiều và 9–11 giờ tối: một số món khai vị giảm nửa giá, bia tươi, rượu vang nhà và cocktail cơ bản $5. Prime rib vào tối thứ Năm và Chủ nhật.",zh:"欢乐时光每天两场，下午 3–6 点和晚上 9–11 点：精选开胃菜半价，生啤、招牌葡萄酒和基础调酒各 $5。周四与周日晚上供应 prime rib。",es:"La hora feliz es dos veces al día, de 3 a 6 pm y de 9 a 11 pm: aperitivos seleccionados a mitad de precio, y cerveza de barril, vino de la casa y cócteles básicos a $5. Prime rib los jueves y domingos por la noche."},
+"Food to your table, around the clock":{vi:"Đồ ăn mang tới bàn, suốt ngày đêm",zh:"全天候送餐到桌",es:"Comida a su mesa, a toda hora"},
+"Anything from the kitchens brought to your seat, including sushi. Scan the code on your table to order without giving up your chair.":{vi:"Mọi món từ các bếp đều được mang tới chỗ ngồi của bạn, kể cả sushi. Quét mã trên bàn để gọi món mà không phải rời ghế.",zh:"各厨房的餐点都能送到您的座位，包括寿司。扫描桌上的二维码即可点餐，不必离座。",es:"Cualquier plato de las cocinas llega a su asiento, incluido el sushi. Escanee el código de su mesa para pedir sin dejar su silla."},
+"Floor service page":{vi:"Trang phục vụ tại sàn",zh:"场内送餐页面",es:"Página de servicio en sala"},
+"To-go 408-484-6298":{vi:"Mang đi 408-484-6298",zh:"外带 408-484-6298",es:"Para llevar 408-484-6298"},
+"Vietnamese-influenced bánh mì, deli and breakfast sandwiches, fresh-baked pastries. Lee's Vietnamese iced coffee, a full espresso bar and a long tea list. The only kitchen open at 4am.":{vi:"Bánh mì kiểu Việt, sandwich deli và bữa sáng, bánh ngọt nướng tại chỗ. Cà phê sữa đá Lee's, quầy espresso đầy đủ và danh mục trà phong phú. Bếp duy nhất còn mở lúc 4 giờ sáng.",zh:"越式风味的 bánh mì、熟食与早餐三明治、现烤糕点。Lee's 越南冰咖啡、完整的意式咖啡吧和长长的茶单。凌晨 4 点唯一还开着的厨房。",es:"Bánh mì de influencia vietnamita, sándwiches de charcutería y de desayuno, bollería recién horneada. Café helado vietnamita de Lee's, una barra de espresso completa y una larga carta de tés. La única cocina abierta a las 4 de la mañana."},
+"Lotus Café menu":{vi:"Thực đơn Lotus Café",zh:"Lotus Café 菜单",es:"Menú de Lotus Café"},
+"Games on":{vi:"Có chiếu thể thao",zh:"球赛直播",es:"Con los partidos puestos"},
+"Dining room 11am–12am · to 1am Fri & Sat · bar runs later":{vi:"Phòng ăn 11 giờ sáng–12 giờ đêm · tới 1 giờ sáng thứ Sáu & thứ Bảy · quầy bar mở muộn hơn",zh:"餐厅 11:00–24:00 · 周五、周六至凌晨 1 点 · 吧台营业更晚",es:"Comedor de 11 am a 12 am · hasta la 1 am viernes y sábado · la barra cierra más tarde"},
+"American and Asian plates, a long bar, and forty HD screens plus two 200-inch ones. Salads run large enough to share. There's a patio.":{vi:"Món Mỹ và món Á, quầy bar dài, bốn mươi màn hình HD cùng hai màn hình 200 inch. Salad đủ lớn để chia nhau. Có cả sân ngoài trời.",zh:"美式与亚洲菜色，长吧台，四十块高清屏幕外加两块 200 英寸大屏。沙拉份量大到可以分着吃。还有露台。",es:"Platos americanos y asiáticos, una barra larga y cuarenta pantallas HD más dos de 200 pulgadas. Las ensaladas son lo bastante grandes para compartir. Hay patio."},
+"Full Zone 8 menu":{vi:"Thực đơn Zone 8 đầy đủ",zh:"完整 Zone 8 菜单",es:"Menú completo de Zone 8"},
+"Ten-seat bar":{vi:"Quầy mười chỗ ngồi",zh:"十座吧台",es:"Barra de diez asientos"},
+"The Bay Area sushi bar's casino location. Sit at the ten-seat counter, or have it sent to the gaming floor, Epic Bar or Zone 8 — it travels across the whole building.":{vi:"Chi nhánh trong sòng bài của quán sushi vùng Vịnh. Ngồi tại quầy mười chỗ, hoặc gọi mang tới sàn chơi, Epic Bar hay Zone 8 — phục vụ khắp tòa nhà.",zh:"这家湾区寿司吧在赌场内的分店。可坐在十座吧台，也可送到牌局区、Epic Bar 或 Zone 8——全楼都能送。",es:"La sede en el casino de la barra de sushi del Área de la Bahía. Siéntese en la barra de diez asientos, o pídalo al salón de juego, Epic Bar o Zone 8 — viaja por todo el edificio."},
+"Hours vary — the podium will know.":{vi:"Giờ mở cửa thay đổi — quầy lễ tân sẽ biết.",zh:"营业时间不固定——前台知道。",es:"El horario varía — en el podio lo sabrán."},
+"Centre floor":{vi:"Giữa sàn",zh:"场内中央",es:"Centro del salón"},
+"The bar in the middle of the casino, and the easiest place to meet someone. Sushi is served here too.":{vi:"Quầy bar ở giữa sòng bài, và là chỗ dễ hẹn gặp nhau nhất. Ở đây cũng có phục vụ sushi.",zh:"位于赌场正中的吧台，也是最方便碰面的地方。这里同样供应寿司。",es:"La barra en medio del casino, y el sitio más fácil para encontrarse con alguien. Aquí también se sirve sushi."},
+"5–11pm":{vi:"5–11 giờ tối",zh:"下午 5 点–晚上 11 点",es:"5–11 pm"},
+"Half off south-of-the-border plates. House margaritas $8, Patrón margaritas $5, Modelo and Corona draft $5.":{vi:"Giảm nửa giá các món Mexico. Margarita nhà $8, margarita Patrón $5, bia tươi Modelo và Corona $5.",zh:"墨西哥风味菜色半价。招牌玛格丽特 $8，Patrón 玛格丽特 $5，Modelo 与 Corona 生啤 $5。",es:"Mitad de precio en platos mexicanos. Margaritas de la casa $8, margaritas Patrón $5, Modelo y Corona de barril $5."},
+"Tiki drinks at $6 — mai tai, blue hawaii, tropi-cali breeze. Loco moco, shrimp soft tacos and Hawaiian pizza at $10 each.":{vi:"Đồ uống tiki $6 — mai tai, blue hawaii, tropi-cali breeze. Loco moco, taco tôm vỏ mềm và pizza Hawaii $10 mỗi món.",zh:"提基调酒 $6——mai tai、blue hawaii、tropi-cali breeze。Loco moco、鲜虾软塔可和夏威夷披萨各 $10。",es:"Bebidas tiki a $6 — mai tai, blue hawaii, tropi-cali breeze. Loco moco, tacos blandos de camarón y pizza hawaiana a $10 cada uno."},
+"3–9pm":{vi:"3–9 giờ tối",zh:"下午 3 点–晚上 9 点",es:"3–9 pm"},
+"Half-price bottles, $5 wines by the glass, and single malt pours at $6 and $15.":{vi:"Chai giảm nửa giá, rượu vang ly $5, và whisky single malt rót $6 và $15.",zh:"整瓶半价，单杯葡萄酒 $5，单一麦芽威士忌 $6 与 $15。",es:"Botellas a mitad de precio, vinos por copa a $5, y single malt servido a $6 y $15."},
+"Specials are dine-in, subject to availability, and some are excluded at Zone 8 and Lotus Café. Confirm at the table.":{vi:"Món đặc biệt chỉ dùng tại chỗ, tùy tình trạng còn hàng, và một số món không áp dụng tại Zone 8 và Lotus Café. Hỏi lại khi ngồi bàn.",zh:"特惠仅限堂食，售完为止，部分在 Zone 8 和 Lotus Café 不适用。请在桌边确认。",es:"Los especiales son para consumo en el local, están sujetos a disponibilidad, y algunos no aplican en Zone 8 ni Lotus Café. Confirme en la mesa."},
+"All dining on casinom8trix.com":{vi:"Toàn bộ ẩm thực trên casinom8trix.com",zh:"全部餐饮信息见 casinom8trix.com",es:"Toda la gastronomía en casinom8trix.com"},
+"CA 95110 · off Highway 101, near San José International":{vi:"CA 95110 · ngay cạnh Xa lộ 101, gần sân bay San José International",zh:"CA 95110 · 临 101 号公路，靠近圣何塞国际机场",es:"CA 95110 · junto a la Autopista 101, cerca del Aeropuerto Internacional de San José"},
+"Floors 6–7":{vi:"Tầng 6–7",zh:"6–7 楼",es:"Pisos 6–7"},
+"Meeting and event space with views across Silicon Valley — corporate days, team events, private parties.":{vi:"Không gian hội họp và sự kiện với tầm nhìn ra khắp Silicon Valley — hội nghị công ty, sự kiện nhóm, tiệc riêng.",zh:"可俯瞰硅谷的会议与活动空间——企业活动、团队聚会、私人派对。",es:"Espacio para reuniones y eventos con vistas a Silicon Valley — jornadas corporativas, eventos de equipo, fiestas privadas."},
+"Monthly news and promotions by email. Sign-up lives on the main site.":{vi:"Tin tức và khuyến mãi hằng tháng qua email. Đăng ký trên trang web chính.",zh:"每月通过邮件发送资讯与优惠。注册请到官方网站。",es:"Noticias y promociones mensuales por correo. El registro está en el sitio principal."},
+"Full menus, current promotions, jackpot rules and the 3D tour of the building.":{vi:"Thực đơn đầy đủ, khuyến mãi hiện hành, luật jackpot và tour 3D của tòa nhà.",zh:"完整菜单、当前优惠、奖金规则，以及大楼的 3D 导览。",es:"Menús completos, promociones vigentes, reglas de jackpot y el recorrido 3D del edificio."},
+"Dealers, kitchen, security and floor staff — openings posted year-round.":{vi:"Chia bài, bếp, an ninh và nhân viên sàn — vị trí tuyển dụng đăng quanh năm.",zh:"荷官、厨房、安保与场内员工——全年发布招聘职位。",es:"Crupieres, cocina, seguridad y personal de sala — vacantes publicadas todo el año."},
+"21+ only. Please play responsibly.":{vi:"Chỉ dành cho người từ 21 tuổi. Vui lòng chơi có trách nhiệm.",zh:"仅限 21 岁以上。请理性娱乐。",es:"Solo mayores de 21 años. Juegue responsablemente."},
+"Prototype built from public information on casinom8trix.com. Not affiliated with or endorsed by Casino M8trix. Jackpot totals, wait times and menu prices are demo data.":{vi:"Bản thử nghiệm dựng từ thông tin công khai trên casinom8trix.com. Không liên kết và không được chứng thực bởi Casino M8trix. Tổng jackpot, thời gian chờ và giá thực đơn là dữ liệu minh họa.",zh:"本原型基于 casinom8trix.com 的公开信息制作。与 Casino M8trix 无隶属关系，也未获其背书。奖金总额、等待时间与菜单价格均为演示数据。",es:"Prototipo creado con información pública de casinom8trix.com. No está afiliado ni respaldado por Casino M8trix. Los totales de jackpot, tiempos de espera y precios del menú son datos de demostración."},
+
+/* floor — promo strip, concierge starters, footers */
+"Daily · 3–6pm & 9–11pm":{vi:"Hằng ngày · 3–6 giờ chiều & 9–11 giờ tối",zh:"每天 · 下午 3–6 点 & 晚上 9–11 点",es:"A diario · 3–6 pm y 9–11 pm"},
+"Tuesdays · 5–11pm":{vi:"Thứ Ba · 5–11 giờ tối",zh:"每周二 · 下午 5 点–晚上 11 点",es:"Martes · 5–11 pm"},
+"Wednesdays · 5–11pm":{vi:"Thứ Tư · 5–11 giờ tối",zh:"每周三 · 下午 5 点–晚上 11 点",es:"Miércoles · 5–11 pm"},
+"Thu & Sun nights":{vi:"Tối thứ Năm & Chủ nhật",zh:"周四与周日晚上",es:"Jueves y domingos por la noche"},
+"How pai gow works":{vi:"Pai gow chơi thế nào",zh:"Pai gow 怎么玩",es:"Cómo funciona el pai gow"},
+"What to eat":{vi:"Nên ăn gì",zh:"吃什么",es:"Qué comer"},
+"Bad beat rules":{vi:"Luật bad beat",zh:"Bad beat 规则",es:"Reglas del bad beat"},
+"Free and confidential: 1-800-GAMBLER ·":{vi:"Miễn phí và bảo mật: 1-800-GAMBLER ·",zh:"免费且保密：1-800-GAMBLER ·",es:"Gratuito y confidencial: 1-800-GAMBLER ·"},
+"· unofficial prototype, not affiliated with Casino M8trix.":{vi:"· bản thử nghiệm không chính thức, không liên kết với Casino M8trix.",zh:"· 非官方原型，与 Casino M8trix 无隶属关系。",es:"· prototipo no oficial, sin afiliación con Casino M8trix."},
+
+/* language sheet + concierge footer */
+"Language":{vi:"Ngôn ngữ",zh:"语言",es:"Idioma"},
+"Game names, venue names and menu items stay as printed, so they match what staff say at the table.":{vi:"Tên trò chơi, tên nhà hàng và tên món ăn giữ nguyên như in, để khớp với những gì nhân viên nói tại bàn.",zh:"牌局名称、场所名称和菜品名称保持原文，以便与员工在桌边说的一致。",es:"Los nombres de juegos, locales y platos se mantienen tal como están impresos, para que coincidan con lo que dice el personal en la mesa."},
+"AI answers can be wrong — check anything that matters with staff. 21+ · 1-800-GAMBLER":{vi:"Câu trả lời của AI có thể sai — hãy hỏi lại nhân viên về những điều quan trọng. 21+ · 1-800-GAMBLER",zh:"AI 的回答可能有误——重要的事情请向员工确认。限 21 岁以上 · 1-800-GAMBLER",es:"Las respuestas de IA pueden equivocarse — confirme con el personal lo que sea importante. 21+ · 1-800-GAMBLER"},
+
+/* menu descriptions, section hours, and table zones */
+"Mixed greens, croutons, balsamic.":{vi:"Rau trộn, bánh mì nướng giòn, giấm balsamic.",zh:"混合生菜、面包丁、香醋。",es:"Mezcla de hojas verdes, picatostes, balsámico."},
+"Feeds two as a side.":{vi:"Đủ cho hai người ăn kèm.",zh:"作为配菜够两人份。",es:"Alcanza para dos como acompañamiento."},
+"Romaine, feta, olives, red wine vinaigrette.":{vi:"Xà lách romaine, phô mai feta, ô liu, sốt giấm rượu vang đỏ.",zh:"罗马生菜、菲达奶酪、橄榄、红酒油醋汁。",es:"Lechuga romana, feta, aceitunas, vinagreta de vino tinto."},
+"Poached chicken, chilled rice noodle, peanuts.":{vi:"Gà luộc, bún gạo để lạnh, đậu phộng.",zh:"水煮鸡肉、冰镇米粉、花生。",es:"Pollo escalfado, fideos de arroz fríos, cacahuetes."},
+"Grilled salmon, quinoa, lemon basil.":{vi:"Cá hồi nướng, hạt quinoa, húng quế chanh.",zh:"烤三文鱼、藜麦、柠檬罗勒。",es:"Salmón a la parrilla, quinoa, albahaca con limón."},
+"Turkey, bacon, avocado, egg, bleu cheese.":{vi:"Gà tây, thịt xông khói, bơ, trứng, phô mai xanh.",zh:"火鸡肉、培根、牛油果、鸡蛋、蓝纹奶酪。",es:"Pavo, tocino, aguacate, huevo, queso azul."},
+"Crisp tortilla shell, beef, beans, guacamole.":{vi:"Vỏ bánh tortilla giòn, thịt bò, đậu, guacamole.",zh:"酥脆玉米饼碗、牛肉、豆子、鳄梨酱。",es:"Tortilla crujiente, carne de res, frijoles, guacamole."},
+"The Wednesday plate.":{vi:"Món của thứ Tư.",zh:"周三的招牌菜。",es:"El plato de los miércoles."},
+"Tiki list, all $6 tonight.":{vi:"Danh mục tiki, tối nay đồng giá $6.",zh:"提基酒单，今晚全部 $6。",es:"Carta tiki, todo a $6 esta noche."},
+"Ask the runner what is on tap.":{vi:"Hỏi nhân viên phục vụ xem hôm nay có bia gì.",zh:"请问服务员今天有什么扎啤。",es:"Pregunte al runner qué hay de barril."},
+"Red or white.":{vi:"Vang đỏ hoặc vang trắng.",zh:"红葡萄酒或白葡萄酒。",es:"Tinto o blanco."},
+"The reason people walk over at 3am.":{vi:"Lý do người ta ghé qua lúc 3 giờ sáng.",zh:"凌晨 3 点还有人特意走过来的原因。",es:"La razón por la que la gente se acerca a las 3 de la mañana."},
+"Strong, sweet, and the long-session drink.":{vi:"Đậm, ngọt, và là thức uống cho ván dài.",zh:"浓、甜，适合久坐长局的一杯。",es:"Fuerte, dulce, y la bebida para sesiones largas."},
+"Full espresso bar.":{vi:"Quầy espresso đầy đủ.",zh:"完整的意式咖啡吧。",es:"Barra de espresso completa."},
+"Zone 8 salads":{vi:"Salad Zone 8",zh:"Zone 8 沙拉",es:"Ensaladas de Zone 8"},
+"Dining room 11am–12am · to 1am Fri & Sat":{vi:"Phòng ăn 11 giờ sáng–12 giờ đêm · tới 1 giờ sáng thứ Sáu & thứ Bảy",zh:"餐厅 11:00–24:00 · 周五、周六至凌晨 1 点",es:"Comedor de 11 am a 12 am · hasta la 1 am viernes y sábado"},
+"5–11pm · dine-in · while it lasts":{vi:"5–11 giờ tối · dùng tại chỗ · hết món thì thôi",zh:"下午 5 点–晚上 11 点 · 仅限堂食 · 售完为止",es:"5–11 pm · en el local · hasta agotar existencias"},
+"5–11pm · dine-in":{vi:"5–11 giờ tối · dùng tại chỗ",zh:"下午 5 点–晚上 11 点 · 仅限堂食",es:"5–11 pm · en el local"},
+"Daily 3–6pm and 9–11pm":{vi:"Hằng ngày 3–6 giờ chiều và 9–11 giờ tối",zh:"每天下午 3–6 点和晚上 9–11 点",es:"A diario de 3 a 6 pm y de 9 a 11 pm"},
+"Open 24 hours · price confirmed at the counter":{vi:"Mở cửa 24 giờ · giá xác nhận tại quầy",zh:"24 小时营业 · 价格以柜台为准",es:"Abierto 24 horas · precio confirmado en el mostrador"},
+"Poker section":{vi:"Khu poker",zh:"扑克区",es:"Zona de póker"},
+"Pure 21.5 section":{vi:"Khu Pure 21.5",zh:"Pure 21.5 区",es:"Zona de Pure 21.5"},
+"Baccarat section":{vi:"Khu baccarat",zh:"百家乐区",es:"Zona de bacará"},
+"Pai gow section":{vi:"Khu pai gow",zh:"Pai gow 区",es:"Zona de pai gow"},
+
+/* jackpot label + Lotus counter line */
+"Hold'em bad beat":{vi:"Bad beat Hold'em",zh:"Hold'em 逆转大奖",es:"Bad beat de Hold'em"},
+"Call 484-6298":{vi:"Gọi 484-6298",zh:"致电 484-6298",es:"Llame al 484-6298"},
+
+/* keys the code asks tr() for at runtime */
+"Updated":{vi:"Cập nhật",zh:"更新于",es:"Actualizado"},
+"Sample feed":{vi:"Dữ liệu mẫu",zh:"示例数据",es:"Datos de muestra"},
+"updated daily on the floor":{vi:"cập nhật mỗi ngày tại sàn",zh:"场内每日更新",es:"se actualiza a diario en la sala"},
+"tables":{vi:"bàn",zh:"桌",es:"mesas"},
+"seats open now":{vi:"còn chỗ ngay",zh:"现在有空位",es:"hay asientos ahora"},
+"min wait":{vi:"phút chờ",zh:"分钟等待",es:"min de espera"},
+"listen for your name":{vi:"hãy lắng nghe gọi tên bạn",zh:"请留意叫号",es:"esté atento a su nombre"},
+"Table":{vi:"Bàn",zh:"桌号",es:"Mesa"},
+"Tables run 1 to 60. Check the number on the tent.":{vi:"Số bàn từ 1 đến 60. Kiểm tra số in trên thẻ để bàn.",zh:"桌号为 1 到 60。请核对立牌上的号码。",es:"Las mesas van del 1 al 60. Revise el número del cartel."},
+"Allergies, no onions, extra napkins…":{vi:"Dị ứng, không hành, thêm khăn giấy…",zh:"过敏、不要洋葱、多给纸巾…",es:"Alergias, sin cebolla, más servilletas…"},
+"Enter a 10-digit mobile number, or switch texts off.":{vi:"Nhập số di động 10 chữ số, hoặc tắt tin nhắn.",zh:"请输入 10 位手机号码，或关闭短信提醒。",es:"Ingrese un móvil de 10 dígitos, o desactive los mensajes."},
+"Progressive · 100%":{vi:"Lũy tiến · 100%",zh:"累积奖金 · 100%",es:"Progresivo · 100%"},
+"Progressive · 10%":{vi:"Lũy tiến · 10%",zh:"累积奖金 · 10%",es:"Progresivo · 10%"},
+"408-453-4030 · to-go 408-484-6298":{vi:"408-453-4030 · mang đi 408-484-6298",zh:"408-453-4030 · 外带 408-484-6298",es:"408-453-4030 · para llevar 408-484-6298"},
+};
+
+/* text nodes get indexed once, then swapped on demand.
+   The chat log is excluded — the model already replies in the chosen language. */
+function tr(en){
+  if (LANG === 'en') return en;
+  return (UI[en] && UI[en][LANG]) || en;
+}
+UI['item']  = {vi:'món', zh:'份', es:'artículo'};
+UI['items'] = {vi:'món', zh:'份', es:'artículos'};
+UI['Language'] = {vi:'Ngôn ngữ', zh:'语言', es:'Idioma'};
+UI['Table'] = {vi:'Bàn', zh:'桌', es:'Mesa'};
+UI['tables'] = {vi:'bàn', zh:'张桌', es:'mesas'};
+UI['seats open now'] = {vi:'còn chỗ ngay', zh:'现在有空位', es:'hay sitio ahora'};
+UI['min wait'] = {vi:'phút chờ', zh:'分钟等待', es:'min de espera'};
+UI['listen for your name'] = {vi:'chú ý nghe gọi tên', zh:'请留意叫号', es:'atento a tu nombre'};
+UI['Sample feed'] = {vi:'Dữ liệu mẫu', zh:'示例数据', es:'Datos de muestra'};
+UI['Updated'] = {vi:'Cập nhật', zh:'更新于', es:'Actualizado'};
+UI['updated daily on the floor'] = {vi:'cập nhật hằng ngày tại sàn', zh:'场内每日更新', es:'se actualiza a diario en la sala'};
+UI['Tables run 1 to 60. Check the number on the tent.'] =
+  {vi:'Bàn từ 1 đến 60. Xem lại số trên bảng để bàn.', zh:'桌号为 1 到 60，请核对桌上立牌的号码。', es:'Las mesas van del 1 al 60. Revisa el número del cartel.'};
+UI['Enter a 10-digit mobile number, or switch texts off.'] =
+  {vi:'Nhập số di động 10 chữ số, hoặc tắt nhắn tin.', zh:'请输入 10 位手机号码，或关闭短信通知。', es:'Escribe un móvil de 10 dígitos, o desactiva los mensajes.'};
+UI['The kitchen has your ticket.'] = {vi:'Bếp đã nhận đơn của bạn.', zh:'厨房已收到你的订单。', es:'La cocina tiene tu pedido.'};
+UI['Cooking now.'] = {vi:'Đang nấu.', zh:'正在烹调。', es:'Cocinando.'};
+UI['A runner is walking it over to you.'] = {vi:'Nhân viên đang mang tới chỗ bạn.', zh:'服务员正送过去。', es:'Un runner te lo lleva.'};
+UI['Delivered. Enjoy it.'] = {vi:'Đã giao. Chúc ngon miệng.', zh:'已送达，请慢用。', es:'Entregado. Que aproveche.'};
+UI['Allergies, no onions, extra napkins…'] =
+  {vi:'Dị ứng, không hành, thêm khăn giấy…', zh:'过敏、不要洋葱、多给纸巾…', es:'Alergias, sin cebolla, más servilletas…'};
+UI['Prototype — nothing is charged, no number is stored.'] =
+  {vi:'Bản thử — không thu tiền, không lưu số điện thoại.', zh:'原型版本 — 不会扣款，也不保存号码。', es:'Prototipo: no se cobra nada ni se guarda ningún número.'};
+
+var textIndex = [];
+function indexText(){
+  textIndex = [];
+  var walker = document.createTreeWalker(document.querySelector('.shell'), NodeFilter.SHOW_TEXT, {
+    acceptNode: function(node){
+      if (node.parentNode.closest && node.parentNode.closest('#askLog, script, style'))
+        return NodeFilter.FILTER_REJECT;
+      return node.nodeValue.trim().length > 1 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  var node;
+  while ((node = walker.nextNode())){
+    /* The English original is stored on the node the first time we see it.
+       Without this, a node already showing Vietnamese no longer matches any
+       dictionary key, drops out of the index, and can never switch again. */
+    var mem = node.__i18n;
+    if (!mem){
+      var raw = node.nodeValue, trimmed = raw.trim();
+      /* Some sentences wrap across two source lines, so the node value carries
+         a newline and indentation in the middle. Look up on a collapsed copy
+         and keep the original for restoring English exactly. */
+      var key = trimmed.replace(/\s+/g, ' ');
+      if (!UI[key]) continue;
+      var at = raw.indexOf(trimmed);
+      mem = node.__i18n = {
+        en: trimmed,
+        key: key,
+        pre: raw.slice(0, at),
+        post: raw.slice(at + trimmed.length)
+      };
+    }
+    textIndex.push(node);
+  }
+}
+function applyUI(){
+  indexText();
+  textIndex.forEach(function(node){
+    var m = node.__i18n;
+    var t = (LANG === 'en') ? m.en : (UI[m.key] && UI[m.key][LANG]) || m.en;
+    node.nodeValue = m.pre + t + m.post;
+  });
+  document.documentElement.lang = LANG;
+}
+
+
+
+/* ═══════════ WHERE THE CONCIERGE TALKS TO ═══════════
+   Inside Claude's preview this URL works as-is — credentials are attached for you.
+   Anywhere else it returns 401, and the guest sees the fallback message.
+   To ship: stand up a small server route that holds your API key, forwards the
+   body to Anthropic, and returns the response. Point ASK_URL at that route.
+   Never put an API key in this file — it ships to every phone that loads the app.
+   Set ASK_DEBUG = true while testing to see the real error in the bubble. */
+var ASK_URL   = 'https://api.anthropic.com/v1/messages';
+
+/* ═══════════ JACKPOT FEED ═══════════
+   Set this to your Worker's /jackpots route and the board shows the real
+   published totals, refreshed daily. Left empty, the board runs on the
+   seeded sample values below and says so. */
+var JACKPOT_URL = '';
+var ASK_DEBUG = false;
+
+/* ═══════════════════════════════════════════════════════════════
+   KNOWLEDGE BASE
+   Edit these entries to teach the concierge. Each one is a note the
+   model may use when the guest's question matches its tags.
+     verify:true  -> the model must tell the guest to confirm with staff
+   Anything a supervisor can correct should live here, not in the code.
+   ═══════════════════════════════════════════════════════════════ */
+var KB = [
+{core:true, tags:'where address location parking directions airport freeway drive',
+ a:'Casino M8trix is at 1887 Matrix Boulevard, San Jose CA 95110, off Highway 101 next to ' +
+   'San Jose International Airport. Phone 408-244-3333. The floor is open 24 hours, every day. ' +
+   'Parking is on site.'},
+
+{core:true, tags:'age id identification 21 minor under age excluded barred',
+ a:'You must be 21 or older to be on the floor, play, or enter a promotion, and you need valid ' +
+   'government photo ID. Anyone on the California Exclusion Management System list, or barred by ' +
+   'the casino, cannot play or claim prizes.'},
+
+{tags:'games list what offered table which play available',
+ a:'Table games here: Pure 21.5 Blackjack, Eternal Baccarat, Double Hand Poker (pai gow poker) ' +
+   'with the Fortune bonus, Pai Gow Tiles with the Cherry & Pearl bonus, Ultimate Texas Hold\'em, ' +
+   'Crazy 4 Poker, Three Card Poker and Casino War. The poker room runs No Limit Hold\'em, ' +
+   'Omaha Hi/Lo and tournaments, 24 hours a day.'},
+
+{tags:'california rules player dealer banker why different house bank',
+ a:'California card rooms cannot bank the games. The house deals and runs the table, but the bank ' +
+   'rotates: a player, or a third-party proposition player, takes the player-dealer position and ' +
+   'covers the bets. That is why blackjack, baccarat and pai gow here differ from Nevada versions.'},
+
+{tags:'fee collection rake cost per hand charged commission schedule',
+ a:'Because the house has no stake in the outcome, it charges a collection — a set fee per hand ' +
+   'or round based on your wager, taken by the dealer. Poker is charged as a seat fee or drop. ' +
+   'The collection rate schedule is posted at the table and also governs how much you may put on ' +
+   'some bonus wagers.', verify:true},
+
+{tags:'pure 21.5 blackjack 21 twenty-one bust hit stand double split natural deck',
+ a:'Pure 21.5 Blackjack plays like the blackjack you know — get closer to 21 than the other hand ' +
+   'without going over — with a rotating player-dealer instead of a house bank. Double down and ' +
+   'split are available, multi-deck games let you double for less than your original wager, and a ' +
+   'natural 21.5 pays 6 to 5. Single, double and multi-deck games run, with bonus wagers paying up ' +
+   'to 1000 to 1. Card Academy has video lessons on it.'},
+
+{tags:'buster blackjack bust bonus side bet dealer busts',
+ a:'Buster-style bonus wagers on the blackjack games let you bet that the player-dealer busts, ' +
+   'with a bigger payoff the more cards are in the busted hand. It sits in its own marked circle ' +
+   'on the table, and how much you can put on it is capped by the collection schedule.', verify:true},
+
+{tags:'baccarat eternal player banker tie commission popular',
+ a:'Eternal Baccarat is the busiest game on this floor. You back the Player or Banker hand, closer ' +
+   'to nine wins, and the third card is drawn by fixed rule rather than choice. The games here run ' +
+   'no commission and carry a wide set of bonus wagers.'},
+
+{tags:'pai gow poker double hand seven cards high low front back copy fortune joker',
+ a:'Double Hand Poker deals seven cards, which you split into a five-card hand and a two-card hand; ' +
+   'the five-card hand must be the stronger of the two. Beat both of the dealer\'s hands to win. ' +
+   'If you are not sure how to split them, the dealers will set your hand the house way — just ask. ' +
+   'The optional Fortune bonus requires a base bet, and its posted four-of-a-kind $500 payout is ' +
+   'split among everyone who made a Fortune bet on that seat. The joker does not count toward it.'},
+
+{tags:'pai gow tiles domino 32 stacks cherry pearl bonus red white pips',
+ a:'Pai Gow Tiles uses 32 Chinese dominoes dealt in stacks of four. You split your four tiles into ' +
+   'two two-tile hands, both of which need to beat the dealer\'s. The optional Cherry & Pearl bonus ' +
+   'depends only on the four tiles you are dealt: all-red pips pays 1,000 to 1 and all-white pips ' +
+   'pays 40 to 1. It goes in the marked bonus circle.'},
+
+{tags:'ultimate texas holdem heads up dealer bad beat bonus trips',
+ a:'Ultimate Texas Hold\'em is played heads-up against the dealer hand rather than other players. ' +
+   'Its Bad Beat bonus pays out against a dealer holding three of a kind or better, whether you ' +
+   'win or lose the hand.'},
+
+{tags:'crazy 4 poker queens up super bonus four card',
+ a:'Crazy 4 Poker is a four-card game with an optional Queens Up side wager for bigger payout odds, ' +
+   'plus a super bonus on qualifying hands.'},
+
+{tags:'casino war high card go to war simple easy game beginner',
+ a:'Casino War is one card against the dealer, highest card wins — the schoolyard game. On a tie ' +
+   'you can go to war. It is the simplest game on the floor if you want to start somewhere easy.'},
+
+{tags:'poker room holdem omaha blinds tournament seat list call in wait',
+ a:'The poker room runs 24/7 — No Limit Hold\'em, Omaha Hi/Lo and tournaments. The house takes a ' +
+   'seat fee rather than a share of the pot. Call-ins to get on the list ahead of arriving are ' +
+   'taken Sunday through Thursday, 4pm to 9am.'},
+
+{tags:'progressive jackpot side bet optional fee prize qualifying hand linked',
+ a:'The progressive jackpot runs off an optional jackpot fee placed alongside your main wager, and ' +
+   'is linked across participating games. Make a qualifying hand and you take the matching prize: ' +
+   'a 100% progressive win, a 10% progressive win, or one of the fixed prizes up to $500. The full ' +
+   'qualifying-hand chart is posted — ask the dealer or check casinom8trix.com/jackpots.'},
+
+{tags:'bad beat jackpot qualify quad hold em beaten how big grows',
+ a:'The Texas Hold\'em progressive bad beat jackpot requires quad fours or better to be beaten, and ' +
+   'the pot grows by $500 a day until someone hits it.'},
+
+{core:true, tags:'jackpot amount total now current how much right now displayed',
+ a:'The board in this app shows the totals published on casinom8trix.com, which the casino updates ' +
+   'once a day from the previous day\'s jackpot fees. The live figure on the floor always runs ' +
+   'somewhat ahead of the published one. Recent posted totals were about $172,000 on the 100% ' +
+   'California Games progressive and $25,500 on the Hold\'em bad beat.'},
+
+{tags:'rack attack royal flush mini bad beat other promo promotion hourly extra',
+ a:'Alongside the main jackpots: Rack Attack pays $100 or $300 hourly, Monday to Thursday 3am to ' +
+   '10am and Monday 4pm to 7pm. The Progressive Royal Flush pays $500 around the clock plus a $50 ' +
+   'monthly progressive. The Mini Bad Beat Jackpot is $10,000, running 24/7, and needs aces full of ' +
+   'queens or better, beaten.'},
+
+{tags:'claim prize win won paperwork tax id photo documentation payout',
+ a:'To collect a jackpot prize you need current valid photo ID and have to complete the required ' +
+   'paperwork at the time you accept it. Winners are responsible for their own taxes and fees, and ' +
+   'the casino can change or cancel a promotion at its discretion. Management has the complete ' +
+   'rules — ask before you count on anything.'},
+
+{tags:'limits minimum maximum bet stakes buy in how much bring',
+ a:'I cannot give you table minimums, maximums or buy-ins — they vary by table and by shift. ' +
+   'Limits are posted at each table and the podium can tell you what is running right now.'},
+
+{tags:'money cash chips atm cage payment credit card check',
+ a:'Chips are bought at the table or the cage and cashed out at the cage. Ask the cage what payment ' +
+   'methods they take and about any limits before you plan around them.', verify:true},
+
+{tags:'etiquette first time new beginner manners what to do rules table',
+ a:'Buy chips between hands or at the cage. Act in turn, and put your chips out in one motion ' +
+   'rather than reaching back for more. Keep your cards on the table and protect them with a chip. ' +
+   'Never discuss a hand that is still live. Tipping the dealer on a win is customary, and asking ' +
+   'the dealer to slow down or set your hand house way is completely normal.'},
+
+{core:true, tags:'food eat menu restaurant hungry drink bar order table service sushi',
+ a:'Five options: Sushi Confidential for a proper sit-down meal, Zone 8 Sports Bar & Grill for ' +
+   'American and Asian plates with forty screens of sport, Lotus Café for bánh mì, pastries and ' +
+   'coffee around the clock, Epic Bar in the middle of the floor, and service brought to your seat. ' +
+   'Zone 8 salads run $6 to $20 and are large enough to share.'},
+
+{tags:'order app scan qr code table number how to order food seat',
+ a:'Scan the QR tent on your table and the menu opens with your table already attached. Add items, ' +
+   'review, send it to the kitchen. A runner brings it to your seat and you can pay the runner or ' +
+   'put it on your account.'},
+
+{tags:'track order where is my food how long text message sms',
+ a:'The tracking strip above the menu moves through four stages: order in, on the pass, runner up, ' +
+   'at your seat. Turn on texts and you get one when the runner leaves the kitchen and one on ' +
+   'arrival. Two messages per order, nothing else.'},
+
+{tags:'academy learn lesson teach tutorial how to play class video julie',
+ a:'Card Academy is a video and in-person tutorial series built with gaming-industry professionals, ' +
+   'covering the fundamentals and strategy of the games on this floor — including a Pure 21.5 ' +
+   'course that starts at card values and works up through splitting and doubling. ' +
+   'casinom8trix.com/academy.'},
+
+{tags:'event tower party private room meeting venue book corporate wedding',
+ a:'The Event Tower on the sixth and seventh floors has meeting and event space with views across ' +
+   'Silicon Valley — corporate events, meetings, team-building and private parties. Requests go ' +
+   'through casinom8trix.com/event-tower.'},
+
+{tags:'club 8 rewards player card points comp promotion loyalty account',
+ a:'Club 8 Rewards sends monthly news and promotions by email; sign-up is on the main site. I ' +
+   'cannot look up your account, tell you your points, or promise a comp — that is the podium or ' +
+   'the cage.', verify:true},
+
+{tags:'history old garden city founded when opened years',
+ a:'The property traces back to 1946, when it operated as Garden City Casino, and was rebuilt as ' +
+   'Casino M8trix in its current high-rise form.', verify:true},
+
+{tags:'job work hiring employment dealer apply career',
+ a:'Openings for dealers, kitchen, security and floor staff are posted year-round at ' +
+   'casinom8trix.com/employment.'},
+
+{tags:'dispute problem complaint lost item wrong payout supervisor argue',
+ a:'Anything involving money, a ruling or a lost item goes to a floor supervisor immediately — they ' +
+   'can pull surveillance and make a call. Do not let a disputed hand get cleared before you raise it.'},
+
+{core:true, tags:'gambling problem stop help addiction losing chasing quit exclude broke',
+ a:'If gambling has stopped being fun, help is free and confidential: 1-800-GAMBLER and ' +
+   'problemgambling.ca.gov, both available in several languages. California also runs an exclusion ' +
+   'program for card rooms that staff can start you on. Asking about it is routine and nobody will ' +
+   'make it awkward.'},
+
+{tags:'odds edge win strategy system beat house luck due streak count',
+ a:'No betting system, streak or pattern beats the built-in edge — each hand is independent and the ' +
+   'collection comes out either way. Good play slows how fast you lose; it does not turn a negative ' +
+   'expectation positive. Anyone selling you otherwise is selling something.'},
+
+{core:true, tags:'hours open close closing time late night 24 when kitchen closed midnight zone lotus 3am 2am overnight still',
+ a:'The gaming floor, the poker room and Lotus Café all run 24 hours. Zone 8\'s dining room serves ' +
+   '11am to midnight, later on Friday and Saturday, with the bar running past the kitchen. ' +
+   'Late at night Lotus Café and floor service are your options.'},
+
+{tags:'happy hour cheap drinks deal appetizer discount half price when',
+ a:'Happy hour runs twice daily, 3pm to 6pm and again 9pm to 11pm: half-price select appetizers, ' +
+   'and $5 draft beer, house wine and well cocktails. Prime rib is the Thursday and Sunday night ' +
+   'special.'},
+
+{tags:'tuesday taco wednesday wipeout sunday wine weekly special night',
+ a:'Taco Tuesday runs 5pm to 11pm — half off south-of-the-border plates, $8 house margaritas, ' +
+   '$5 Patrón margaritas and $5 Modelo or Corona draft. Wipeout Wednesday, same hours, has $6 tiki ' +
+   'drinks and $10 loco moco, shrimp soft tacos or Hawaiian pizza. Sundays 3pm to 9pm bring ' +
+   'half-price bottles and $5 wines by the glass. All dine-in, and some items are excluded at ' +
+   'Zone 8 and Lotus Café.'},
+
+{tags:'phone call number togo takeout pickup delivery order ahead reserve restaurant zone lotus',
+ a:'Zone 8 is 408-453-4030, and to-go orders for both Zone 8 and Lotus Café go to 408-484-6298. ' +
+   'The main casino line is 408-244-3333.'},
+
+{tags:'banh mi vietnamese coffee sandwich pastry lotus cafe late night 3am 2am overnight espresso tea',
+ a:'Lotus Café runs all night: Vietnamese-influenced bánh mì, deli and breakfast sandwiches, ' +
+   'fresh-baked pastries, Lee\'s Vietnamese iced coffee, a full espresso bar and a long tea list. ' +
+   'It is the kitchen still going at 4am.'},
+
+{tags:'sushi confidential raw fish roll nigiri where seat bar',
+ a:'Sushi Confidential has a ten-seat sushi bar here, and its food travels — you can order it to ' +
+   'the gaming floor, Epic Bar or Zone 8 rather than moving. Ask the podium for current hours.'},
+
+{tags:'dress code shoes hat clothes wear',
+ a:'I do not have the current dress code. The podium can tell you before you sit down.', verify:true},
+
+{tags:'smoke smoking vape outdoor patio',
+ a:'I do not have current smoking arrangements. Ask a floor supervisor where the designated areas ' +
+   'are.', verify:true}
+];
+
+/* ── matching ──────────────────────────────────────────────────────
+   Exact tag hits count triple; prefix hits count once. Question words
+   are dropped so "what time does zone 8 close" ranks on zone + close,
+   not on "what" and "does". */
+var STOP = ('what when where which who why how does do did the and for with are is it its ' +
+            'you your yours this that there they them have has had can could would should ' +
+            'about any get got tell know want need please just some there').split(' ');
+
+function terms(q){
+  var stop = {};
+  STOP.forEach(function(w){ stop[w] = 1; });
+  return (q || '').toLowerCase()
+    .replace(/[^a-z0-9\u00c0-\u1ef9\u4e00-\u9fff\s]/g, ' ')
+    .split(/\s+/)
+    .filter(function(w){ return w.length > 2 && !stop[w]; });
+}
+
+function rank(q){
+  var words = terms(q);
+  return KB.map(function(e){
+    var tags = e.tags.split(' '), score = 0, counted = {};
+    words.forEach(function(w){
+      if (counted[w]) return;
+      for (var i = 0; i < tags.length; i++){
+        var t = tags[i];
+        if (t === w){ score += 3; counted[w] = 1; return; }
+      }
+      for (var j = 0; j < tags.length; j++){
+        var u = tags[j];
+        if (u.length > 3 && w.length > 3 && (u.indexOf(w) === 0 || w.indexOf(u) === 0)){
+          score += 1; counted[w] = 1; return;
+        }
+      }
+    });
+    return { e: e, score: score };
+  }).filter(function(x){ return x.score > 0; })
+    .sort(function(a, b){ return b.score - a.score; });
+}
+
+/* answer from the knowledge base alone, for when the model is unreachable */
+function localAnswer(q){
+  var top = rank(q)[0];
+  if (!top || top.score < 3) return null;
+  return L10N[LANG].off + '\n\n' + top.e.a;
+}
+
+function recall(q){
+  var picked = rank(q).slice(0, 5).map(function(x){ return x.e; });
+  KB.forEach(function(e){ if (e.core && picked.indexOf(e) === -1) picked.push(e); });
+  return picked.map(function(e){
+    return '- ' + e.a + (e.verify ? '  [NEEDS CONFIRMING — tell the guest to check with staff]' : '');
+  }).join('\n');
+}
+
+var HOUSE_BASE = [
+  'You are the floor concierge for Casino M8trix, a 24/7 California card room at',
+  '1887 Matrix Boulevard, San Jose, CA 95110 (408-244-3333), just off Highway 101 near',
+  'San Jose International Airport. Table games: poker (Hold\'em, Omaha, tournaments),',
+  'Pure 21.5 Blackjack, Eternal Baccarat, Double Hand Poker (pai gow poker), and Pai Gow',
+  'Tiles with the Cherry & Pearl bonus. Progressive and bad-beat jackpots link participating',
+  'tables. Food: Sushi Confidential, Zone 8 Sports Bar & Grill, Lotus Cafe, Epic Bar, and',
+  'service at your seat on the gaming floor. Card Academy teaches the games. The Event Tower',
+  'on floors 6-7 hosts private events. Guests order food to their table by scanning the QR',
+  'tent at their seat.',
+  '',
+  'How to answer:',
+  '- Be brief and concrete. Two or three sentences is usually right. Plain words, no hype.',
+  '- Explain how games are dealt and what the rules mean. That is the most useful thing you do.',
+  '- Answer general questions too (a rideshare, the weather, a word someone used at the table).',
+  '- Never claim a betting system, streak, or strategy beats the house. Explain the real odds',
+  '  when asked, including that the house edge does not go away.',
+  '- Never encourage anyone to keep playing, bet more, or chase a loss. Do not tell anyone',
+  '  what to wager.',
+  '- If someone sounds like they are losing control, in distress, or gambling with money they',
+  '  need, say so kindly and point to 1-800-GAMBLER and problemgambling.ca.gov, which answer',
+  '  in several languages. Do not lecture.',
+  '- Do not give legal, medical, or financial advice.',
+  '- You do not know live jackpot totals, wait times, table limits, promotion terms, or hours',
+  '  for a specific kitchen. Say so and send them to the floor staff or casinom8trix.com.',
+  '- This is an unofficial prototype. Never promise a comp, a refund, or a payout.'
+].join('\n');
+
+function house(q){
+  return HOUSE_BASE + '\n\nLanguage:\n' + [
+    '- Write your replies in ' + L10N[LANG].name + '.',
+    '- If the guest writes in a different language, switch to that language and stay there.',
+    '- For Chinese, mirror the script the guest uses — simplified or traditional.',
+    '- Keep table terms guests actually hear from the dealer in English (bad beat, pai gow,',
+    '  high hand, all in, muck), and gloss each one briefly the first time you use it, so the',
+    '  guest recognises the word at the table.',
+    '- Numbers, the address, and phone numbers stay in their standard form.'
+  ].join('\n') +
+  '\n\nReference notes for this question. Prefer these over your own recollection.\n' +
+  'A note marked NEEDS CONFIRMING may be out of date or vary by shift: give the answer, then\n' +
+  'tell the guest to confirm it with a floor supervisor or the podium. If the notes do not\n' +
+  'cover what was asked and it is specific to this casino, say you do not know and name who\n' +
+  'does — do not guess at house rules, limits, promotion terms, or payouts.\n' +
+  'General knowledge questions unrelated to the casino you answer normally.\n\n' +
+  recall(q);
+}
+
+
+var askScrim = $('askScrim'), askLog = $('askLog'), askIn = $('askIn'), askSend = $('askSend');
+var history = [], busy = false, askOpener = null;
+
+function esc(s){
+  return s.replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+function bubble(who, txt, cls){
+  var row = document.createElement('div');
+  row.className = 'msg' + (who === 'me' ? ' me' : '');
+  row.innerHTML = '<div class="bubble ' + (cls || (who === 'me' ? 'me' : 'them')) + '">' + esc(txt) + '</div>';
+  askLog.appendChild(row);
+  askLog.scrollTop = askLog.scrollHeight;
+  return row;
+}
+function greet(){
+  if (askLog.children.length) return;
+  var L = L10N[LANG];
+  bubble('them', L.greet);
+  var chips = document.createElement('div');
+  chips.className = 'starters';
+  L.starters.forEach(function(p){
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = p[0];
+    b.addEventListener('click', function(){ chips.remove(); ask(p[1]); });
+    chips.appendChild(b);
+  });
+  askLog.appendChild(chips);
+}
+function setLanguage(code){
+  LANG = code;
+  buildMenu();                 /* rebuild first — new nodes need translating too */
+  renderWaitlist();            /* composed meta lines, so rebuild rather than swap */
+  stamp();                     /* board footer is composed too */
+  paintTrack();
+  applyUI();                   /* then swap every text node, old and new */
+  syncCart();
+  document.querySelectorAll('#langList .pick').forEach(function(b){
+    b.setAttribute('aria-current', b.dataset.lang === code);
+  });
+  $('langBtn').setAttribute('aria-label', tr('Language'));
+  applyLang(code);             /* concierge strings */
+}
+
+function applyLang(code){
+  LANG = code;
+  var L = L10N[LANG];
+  $('askTitle').textContent = L.title;
+  $('askClose').textContent = L.close;
+  $('askIn').placeholder = L.ph;
+  $('askFoot').textContent = L.foot;
+  document.querySelectorAll('#langRow .lang').forEach(function(b){
+    b.setAttribute('aria-pressed', b.dataset.lang === code);
+  });
+  document.documentElement.lang = code;
+  $('micBtn').setAttribute('aria-label', L10N[code].mic);
+  $('spkBtn').setAttribute('aria-label', L10N[code].spk);
+  if (listening) stopListening();
+  stopSpeaking();
+  /* nothing said yet — start over in the new language */
+  if (!history.length){ askLog.innerHTML = ''; greet(); }
+}
+document.querySelectorAll('#langRow .lang').forEach(function(b){
+  b.addEventListener('click', function(){ setLanguage(b.dataset.lang); });
+});
+function openAsk(seed){
+  askOpener = document.activeElement;
+  askScrim.classList.add('is-on');
+  greet();
+  if (seed) ask(seed); else setTimeout(function(){ askIn.focus(); }, 320);
+}
+function closeAsk(){
+  if (listening) stopListening();
+  stopSpeaking();
+  askScrim.classList.remove('is-on');
+  if (askOpener) askOpener.focus();
+}
+var langScrim = $('langScrim'), langOpener = null;
+$('langBtn').addEventListener('click', function(){
+  langOpener = document.activeElement;
+  langScrim.classList.add('is-on');
+  var cur = langScrim.querySelector('[aria-current="true"]') || langScrim.querySelector('.pick');
+  if (cur) cur.focus();
+});
+function closeLang(){
+  langScrim.classList.remove('is-on');
+  if (langOpener) langOpener.focus();
+}
+$('langClose').addEventListener('click', closeLang);
+langScrim.addEventListener('click', function(e){ if (e.target === langScrim) closeLang(); });
+document.querySelectorAll('#langList .pick').forEach(function(b){
+  b.addEventListener('click', function(){ setLanguage(b.dataset.lang); closeLang(); });
+});
+
+$('askBtn').addEventListener('click', function(){ openAsk(); });
+$('askClose').addEventListener('click', closeAsk);
+askScrim.addEventListener('click', function(e){ if (e.target === askScrim) closeAsk(); });
+document.querySelectorAll('[data-ask]').forEach(function(b){
+  b.addEventListener('click', function(){ openAsk(b.dataset.ask); });
+});
+
+askIn.addEventListener('input', function(){
+  askIn.style.height = 'auto';
+  askIn.style.height = Math.min(askIn.scrollHeight, 110) + 'px';
+});
+askIn.addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); ask(askIn.value); }
+});
+askSend.addEventListener('click', function(){ ask(askIn.value); });
+
+/* ═══════════ VOICE ═══════════
+   Speech in and out run in the browser — no server, no audio leaves the phone.
+   Support varies: Chrome and Safari handle both, Firefox has no recognition.
+   Controls stay hidden where the browser cannot do it. */
+var SPEECH_LANG = {en:'en-US', vi:'vi-VN', zh:'zh-CN', es:'es-US'};
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var TTS = window.speechSynthesis || null;
+var rec = null, listening = false, speakOn = false;
+
+if (SR)  $('micBtn').hidden = false;
+if (TTS) $('spkBtn').hidden = false;
+
+function stopSpeaking(){
+  if (TTS) TTS.cancel();
+  var b = askLog.querySelector('.speaking');
+  if (b) b.classList.remove('speaking');
+}
+
+function say(text, node){
+  if (!speakOn || !TTS || !text) return;
+  stopSpeaking();
+  /* strip anything that reads badly out loud */
+  var clean = text.replace(/[*_`#>\[\]]/g,'').replace(/\s+/g,' ').trim();
+  var u = new SpeechSynthesisUtterance(clean);
+  u.lang = SPEECH_LANG[LANG] || 'en-US';
+  var match = (TTS.getVoices() || []).filter(function(v){
+    return v.lang && v.lang.toLowerCase().indexOf(u.lang.slice(0,2)) === 0;
+  })[0];
+  if (match) u.voice = match;
+  u.rate = 1;
+  if (node){
+    node.classList.add('speaking');
+    u.onend = u.onerror = function(){ node.classList.remove('speaking'); };
+  }
+  TTS.speak(u);
+}
+
+/* Which wall are we hitting? Returns a key into L10N, or null if the mic should work. */
+function micBlockedReason(){
+  if (!SR) return 'micno';
+  if (!window.isSecureContext) return 'micneed';
+  try {
+    var pol = document.permissionsPolicy || document.featurePolicy;
+    if (window.self !== window.top && pol && pol.allowsFeature &&
+        !pol.allowsFeature('microphone')) return 'micframe';
+  } catch (err) { /* older browsers cannot tell us — let the prompt decide */ }
+  return null;
+}
+
+/* Ask the browser for permission explicitly, then release the stream straight away.
+   Nothing is recorded — this only triggers the prompt that SpeechRecognition needs. */
+function requestMic(then){
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ then(); return; }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+    stream.getTracks().forEach(function(t){ t.stop(); });
+    then();
+  }).catch(function(err){
+    bubble('them', L10N[LANG][err && err.name === 'NotFoundError' ? 'micno' : 'micoff'], 'warn');
+  });
+}
+
+function stopListening(){
+  listening = false;
+  $('micBtn').classList.remove('on');
+  $('askIn').placeholder = L10N[LANG].ph;
+  if (rec){ try { rec.stop(); } catch(e){} rec = null; }
+}
+
+function startListening(){
+  if (!SR || listening || busy) return;
+  stopSpeaking();
+  rec = new SR();
+  rec.lang = SPEECH_LANG[LANG] || 'en-US';
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.maxAlternatives = 1;
+
+  rec.onstart = function(){
+    listening = true;
+    $('micBtn').classList.add('on');
+    $('askIn').placeholder = L10N[LANG].hearing;
+  };
+  rec.onresult = function(e){
+    var said = '', done = false;
+    for (var i = e.resultIndex; i < e.results.length; i++){
+      said += e.results[i][0].transcript;
+      if (e.results[i].isFinal) done = true;
+    }
+    $('askIn').value = said;
+    if (done && said.trim()){
+      stopListening();
+      ask(said);
+    }
+  };
+  rec.onerror = function(ev){
+    stopListening();
+    if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed'){
+      bubble('them', L10N[LANG].micoff, 'warn');
+    }
+  };
+  rec.onend = function(){ if (listening) stopListening(); };
+
+  try { rec.start(); } catch(e){ stopListening(); }
+}
+
+$('micBtn').addEventListener('click', function(){
+  if (listening){ stopListening(); return; }
+  var blocked = micBlockedReason();
+  if (blocked){
+    bubble('them', L10N[LANG][blocked], 'warn');
+    console.warn('[concierge] microphone blocked:', blocked,
+      '| secure context:', window.isSecureContext, '| framed:', window.self !== window.top);
+    return;
+  }
+  requestMic(startListening);
+});
+$('spkBtn').addEventListener('click', function(){
+  speakOn = !speakOn;
+  $('spkBtn').setAttribute('aria-pressed', speakOn);
+  if (!speakOn) stopSpeaking();
+});
+
+function ask(text){
+  text = (text || '').trim();
+  if (!text || busy) return;
+
+  bubble('me', text);
+  askIn.value = '';
+  askIn.style.height = 'auto';
+  history.push({role:'user', content:text});
+  busy = true;
+  askSend.disabled = true;
+
+  var wait = document.createElement('div');
+  wait.className = 'msg';
+  wait.innerHTML = '<div class="bubble them typing"><i></i><i></i><i></i></div>';
+  askLog.appendChild(wait);
+  askLog.scrollTop = askLog.scrollHeight;
+
+  fetch(ASK_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:1000,
+      system: house(text),
+      messages: history.slice(-12)
+    })
+  })
+  .then(function(r){
+    if (!r.ok) throw new Error('HTTP ' + r.status +
+      (r.status === 401 ? ' — no API key reached the endpoint' :
+       r.status === 429 ? ' — rate limited' : ''));
+    return r.json();
+  })
+  .then(function(data){
+    var out = (data.content || [])
+      .map(function(b){ return b.type === 'text' ? b.text : ''; })
+      .filter(Boolean).join('\n').trim();
+    if (!out) throw new Error('empty response');
+    wait.remove();
+    say(out, bubble('them', out).querySelector('.bubble'));
+    history.push({role:'assistant', content:out});
+  })
+  .catch(function(e){
+    console.error('[concierge]', e && e.message ? e.message :
+      'request blocked — usually CORS, offline, or a missing endpoint');
+    wait.remove();
+    var local = localAnswer(text);
+    if (local){
+      var row = bubble('them', local + (ASK_DEBUG ? '\n\n[offline: ' + (e && e.message || 'network') + ']' : ''));
+      say(local, row.querySelector('.bubble'));
+    } else {
+      bubble('them', L10N[LANG].err + (ASK_DEBUG ? '\n\n[' + (e && e.message || 'network') + ']' : ''), 'warn');
+    }
+    history.pop();
+  })
+  .then(function(){
+    busy = false;
+    askSend.disabled = false;
+    askLog.scrollTop = askLog.scrollHeight;
+  });
+}
+
+/* ═══════════ BOOT ═══════════ */
+buildMenu();
+setLanguage('en');
+var t = parseInt(new URLSearchParams(location.search).get('table'), 10);
+if (t >= 1 && t <= 60){ openTable(t); goTo('order'); }
+syncCart();
+})();
+</script>
